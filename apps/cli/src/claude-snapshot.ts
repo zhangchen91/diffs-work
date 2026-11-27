@@ -40,7 +40,11 @@ export function runSnapshot(): void {
   const dir = path.join(tmpdir(), "diffs-claude");
   try {
     mkdirSync(dir, { recursive: true });
-    copyFileSync(abs, path.join(dir, `${Buffer.from(abs).toString("base64url")}.txt`));
+    // Keep the extension: the post hook compares this against the file, and `compareFiles` picks a
+    // document engine by extension. A `.txt` copy of a `.docx` made every document edit print zip
+    // bytes. The naming rule must match `snapshotPath()` in claude-hook.ts.
+    const suffix = path.extname(abs) || ".bin";
+    copyFileSync(abs, path.join(dir, `${Buffer.from(abs).toString("base64url")}${suffix}`));
   } catch {
     // A new file has nothing to copy; the post hook then has no before-image and stays quiet.
   }

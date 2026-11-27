@@ -41,7 +41,11 @@ function firstString(args: Record<string, unknown>, keys: string[]): string | nu
 
 /** The snapshot this hook took before the edit, if one exists. */
 function snapshotPath(cwd: string, file: string): string {
-  return path.join(tmpdir(), "diffs-claude", `${Buffer.from(path.resolve(cwd, file)).toString("base64url")}.txt`);
+  // The suffix is part of the identity: the post hook compares this snapshot against the file, and
+  // `compareFiles` chooses a document engine by extension. A `.txt` snapshot of a `.docx` made every
+  // document edit print zip bytes instead of its paragraphs.
+  const suffix = path.extname(file) || ".bin";
+  return path.join(tmpdir(), "diffs-claude", `${Buffer.from(path.resolve(cwd, file)).toString("base64url")}${suffix}`);
 }
 
 async function post(): Promise<void> {
@@ -67,16 +71,24 @@ async function post(): Promise<void> {
     return;
   }
   const oldPath = snap;
-  const newPath = `${snap}.after`;
+  // The temp copies have to keep the file's extension: `compareFiles` picks the engine from it, so a
+  // `.docx` copied to `foo.after` was compared as text and the card printed zip entries.
+  const suffix = path.extname(abs);
+  const newPath = `${snap}.after${suffix}`;
   try {
     copyFileSync(abs, newPath);
     return compareFiles({ old: oldPath, new: newPath }).then((r) => {
       // Claude shows hook stdout to the person, not to the model: this is the row they read after
       // an edit, which is what the CLI already prints for `diffs diff`.
       process.stdout.write(`${r.summary}\n`);
+      // A document's rows are its parts and paragraphs, not bytes. Printing them with a `+`/`-`
+      // gutter drew raw zip entries into the terminal (measured: a `.docx` edit printed
+      // "[Content_Types].xml" and PK headers), which is worse than saying nothing.
+      const isDocument = r.family === "docx" || r.family === "xlsx" || r.family === "pptx" || r.family === "pdf";
       for (const h of r.hunks.slice(0, 3)) {
-        for (const l of h.lines.slice(0, 8)) {
-          const sign = l.kind === "insert" ? "+" : l.kind === "delete" ? "-" : " ";
+        if (isDocument) process.stdout.write(`${h.header}\n`);
+        for (const l of h.lines.slice(0, isDocument ? 10 : 8)) {
+          const sign = isDocument ? " " : l.kind === "insert" ? "+" : l.kind === "delete" ? "-" : " ";
           process.stdout.write(`${sign} ${l.text}\n`);
         }
       }

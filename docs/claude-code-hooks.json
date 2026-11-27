@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/diffs.work/apps/cli/lib/bin.js hook:claude-pre",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/diffs.work/apps/cli/lib/bin.js hook:claude-post",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -34,6 +34,7 @@
 |---|---|
 | git difftool | ✅ 真的拉起：`git difftool --tool=diffs` 输出 pair URL，浏览器打开后显示 `+1/−1`，见 `docs/evidence/A5-git-difftool.png` |
 | MCP 往返 | ✅ `initialize → tools/list → tools/call` 全通，返回 portable@1 |
+| Claude Code hook | ✅ 实测：改 TS 打印 `+1/-1`；改 `.docx` 打印 `1 insertion(s)/1 deletion(s)` 与改动段落。此前把 `.docx` 当文本比，打印出一堆 zip 字节，已修（快照与临时副本必须保留扩展名） |
 | VS Code 扩展 | ❌ 仓库里没有、市场里也没有；config 页已标 `planned` |
 | 浏览器扩展 | ✅ 存在且能用（选中两段文字右键比对）；文案只承诺这一点，没有夸大成「GitHub commit 页内自动渲染」 |
 | config 页 MCP 重复 | ✅ 只剩 MCP 专区一条 |
