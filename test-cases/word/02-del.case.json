@@ -1,0 +1,12 @@
+{
+  "name": "02-del",
+  "kind": "word",
+  "before": "02-del.before.docx",
+  "after": "02-del.after.docx",
+  "expect": {
+    "ops": [
+      "del"
+    ],
+    "notOps": []
+  }
+}

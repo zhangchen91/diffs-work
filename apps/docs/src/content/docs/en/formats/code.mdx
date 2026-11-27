@@ -1,0 +1,145 @@
+---
+title: Code
+description: "Code comparison has to do three things: tell an edit apart from a move, land the change on the exact characters, and reproduce the result stably. Here is how it decides, and where it still gets it wrong."
+group: Formats
+order: 1
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+Code is where diffs.work started, and also the place most easily fobbed off with a "line-level
+diff". One small change can show up as **6 lines deleted + 6 lines added**, when all it really did
+was change one symbol in a condition. The reader has to hunt for that one character across 12 lines.
+
+## Three layers of judgement
+
+<Doc kind="step" n="1" title="Lines: which lines changed" />
+
+First, Myers computes the **longest common subsequence** of the two sides (matching whole lines of
+text exactly). This step answers only "which lines survived untouched".
+
+A long unchanged prefix / suffix shared by both files never enters the computation; only the middle
+stretch actually takes part in the comparison.
+
+<Doc kind="step" n="2" title="Runs: is a changed line one edit, or a delete plus an add" />
+
+After the LCS there are a number of **unmatched runs**. Rather than pairing lines one by one, each
+run is planned as a whole:
+
+- if two lines share a **common prefix + common suffix** that is long enough (≥ 50% of the longer
+  line), they are judged "the same line rewritten" → **one edit**;
+- otherwise it is a **whole-line delete + whole-line insert**.
+
+This rule explains every case that "looks like it should be an edit but is counted as a delete plus
+an add", and also why two lines that both start with `name:` but say completely different things
+are not forced into being an "edit".
+
+<Doc kind="step" n="3" title="Characters: which characters in this line changed" />
+
+Once the pair is matched, the changed span is the stretch between the pair's **common prefix
+length** and the **start of the common suffix**, computed separately for each side:
+
+```text
+old:  end, { buffer = 0, silent = true })
+new:  end, { buf    = 0, silent = true })
+          └─ "fer" removed, right where it was
+```
+
+This is not the result of "guessing by word": it is the very pair of prefix and suffix used for the
+matching — so character positions can never contradict the judgement that "this is one edit".
+
+<Callout tone="note" title="Why not a word-level diff.">
+A word-level diff produces prettier marks, but it is a second, independent algorithm alongside line
+pairing, and the two easily contradict each other (the marked positions do not line up with "this is
+one edit"). The current approach is: **there is only one judgement, and the marks come from that
+judgement itself**. In the few cases where an entire word is swapped, the mark covers the whole word
+— which is exactly the right granularity.
+</Callout>
+
+## A "move" is not "deleted and re-added"
+
+A single whole-block move naturally shows up in a line-level diff as "a pile deleted here, a pile
+added there". Readers conclude the logic was deleted. We identify it separately: the same content
+changed position, so it is **neither a deletion nor an addition**; instead a move is drawn between
+the two locations.
+
+This also explains why "moves" are harder to get right than "edits" — it requires knowing what the
+**unit** of the code is:
+
+| Language | Unit |
+|---|---|
+| Almost every language | Top-level declarations (`fn` / `def` / `function` / `class` / `struct` / `impl` …) |
+| Markdown | A heading and its body |
+| Office | Paragraphs / slides / table blocks |
+
+The unit is complete on both sides, its content is identical, and its position changed → one move.
+The unit's content changed → it is an edit, not a move.
+
+## Supported languages
+
+The extension decides the language; the language decides the syntactic structure (top-level
+declarations) and the highlighting:
+
+| Language | Extensions |
+|---|---|
+| TypeScript / TSX | `.ts .mts .cts .tsx` |
+| JavaScript / JSX | `.js .mjs .cjs .jsx` |
+| Python | `.py .pyi .pyw` |
+| Rust | `.rs` |
+| Go | `.go` |
+| Java / Kotlin / Scala | `.java .kt .scala` |
+| C / C++ | `.c .h .cc .cpp .cxx .hpp .hh .hxx` |
+| C# | `.cs` |
+| Swift | `.swift` |
+| Ruby / PHP / Perl | `.rb .php .pl .pm` |
+| Lua / R / Dart | `.lua .r .dart` |
+| Shell | `.sh .bash` |
+| SQL | `.sql` |
+| HTML / CSS | `.html .htm .css .scss` |
+| JSON / YAML / XML | `.json .yml .yaml .xml` plus the usual XML dialect extensions |
+| Markdown | `.md .markdown` |
+
+Extensions that cannot be recognised are treated as **plain text**, without an error.
+
+## How it does today
+
+We compare against the cases in OmniDiff's official showcase (which includes this project's earliest
+hand-written cases), checking decisions line by line and character by character:
+
+```bash
+node scripts/omnidiff-conformance.mjs
+```
+
+<Callout tone="warn" title="The honest status: move marks are not fully trustworthy yet.">
+Comparing line by line against the 25 cases in OmniDiff's official showcase, **10 agree on what
+changed** (add / remove / edit / move).
+
+**Add, remove and edit are reliable. Move (⇅) is reliable when:**
+
+- a contiguous block of lines was relocated as a unit, including a block with one edited line
+  inside it (`function f` moved and had a line changed — still one block);
+- an identifier within a line was pushed into a new column by inserted text (`B` in
+  `{A, B}` → `{A, C, B}`).
+
+**Still unreliable**: a line inserted or deleted at the top of a file, shifting everything below
+it. That whole-file shift is still marked as a move, when those lines were merely pushed down.
+When you see a large contiguous run of ⇅, read it as "these lines' alignment against what is above
+changed", not as "they were relocated".
+
+Separately, **inline mark width** differs from the reference: on a rename it highlights the whole
+identifier (`EVENT_NEW_FRAME` → `SC_EVENT_NEW_FRAME`), while we highlight only the inserted `SC_`.
+That affects how much is highlighted, not which rows changed.
+</Callout>
+
+## Views
+
+| View | What you see | Best for |
+|---|---|---|
+| Unified | Line-level plus per-character within lines, with context | Confirming change by change |
+| Side-by-side | Two columns, paired and aligned | Seeing overall structural change |
+| Syntax | Column-level differences along the syntax tree | Pinpointing a token |
+
+All three views read the **same** result; switching between them changes no decision.

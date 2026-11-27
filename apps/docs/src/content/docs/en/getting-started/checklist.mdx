@@ -1,0 +1,62 @@
+---
+title: The verification checklist
+description: "A checklist you can print and keep at your desk: what a delivery must carry, where to recompute, and whether to look at granularity or at counts."
+group: Start
+order: 3
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+This is the operational version of [what "verifiable" means](/en/concepts/verification/).
+You do not need to read that first; following this works on its own.
+
+## On delivery (the agent's side)
+
+- [ ] Attach the file **before** the change and the file **after** it, or a commit
+- [ ] Attach the **raw result** of `diff_compare` (or `diffs diff`), not a summary
+- [ ] Point at positions ("line N"), not at volume ("N changes")
+- [ ] Call moved content "moved", not "deleted and added"
+- [ ] If the tool errored, quote the error; never fabricate a result
+
+## On review (the person's side)
+
+- [ ] **Recompute in a second tool** — not the agent's own
+- [ ] Look at the shape first (which functions, paragraphs, cells or slides), then the content
+- [ ] For each edit, read the **characters** that changed, not the whole line
+- [ ] For each move, confirm the content that arrived **was not also edited** on the way
+- [ ] Check for newly added dependencies, imports and external links
+- [ ] Ignore whitespace and line-ending noise (the tool already filters it; if a lot appears, the
+      two sides probably came from different sources)
+
+## The three-minute version
+
+> Below, `diffs <command>` means the CLI. It is **not on npm yet**, so run `pnpm build:cli` first
+> and replace `diffs` with `node apps/cli/lib/bin.js`.
+
+```bash
+# 1. recompute
+diffs diff before.ts after.ts
+
+# 2. the shape only: which rows, and did anything move wholesale
+diffs diff before.ts after.ts --json | jq '.counts'
+
+# 3. when someone else needs to see it
+diffs diff --open before.ts after.ts
+```
+
+<Callout tone="rule" title="If you can only do one thing.">
+**Recompute the diff in a third-party tool.** It is worth far more than rereading the description,
+and far more trustworthy than asking the agent to check itself.
+</Callout>
+
+## When you may skip it
+
+- The change is **purely additive** (new files, new directories) and touches no existing file;
+- The change is confined to documentation **comments or a README**, and involves no commands,
+  paths or parameters;
+- The change has been verified by an **independent source** (an upstream release note, say).
+
+Anything else means "I checked it" is not a review.

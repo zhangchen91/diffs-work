@@ -1,0 +1,28 @@
+---
+title: 官网内对比
+description: 无需安装，拖两个文件即可对比；文本族开箱可用。
+group: Concepts
+order: 1
+lang: zh
+---
+
+## 用法
+
+1. 打开 https://diffs.work/#/compare
+2. 把两个文件拖到左右两个框（或点「选择」）
+3. 结果区显示差异；可导出 `.diff`
+
+## 现在能比什么
+
+| 文件族 | 引擎 | 效果 |
+|---|---|---|
+| Markdown | md-ast（结构解析） | 块级 + 行内（句子/数字级）高亮，表格逐行对齐 |
+| 纯文本 / CSV / 配置 | text-core | 行级 diff，对不上时回退词级 |
+| 代码 | code-ast（词法 + 符号） | 注释/字符串区分，符号增删改摘要 |
+| Excel | xlsx-core（zip + 流式 XML） | 工作表对齐（含改名）、格级增删改、公式变化 |
+| XML / OOXML | core-xml | 按元素路径比对，属性变化单独计数 |
+| Word / PPT / PDF | rules-core.wasm / pdf.js | 都在本站内渲染，不需要本地站 |
+
+## 语言
+
+界面支持简体中文与 English；右上角切换，选择会记住。新增语言见 `packages/i18n`。

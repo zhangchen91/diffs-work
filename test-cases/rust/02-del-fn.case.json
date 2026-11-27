@@ -1,0 +1,14 @@
+{
+  "name": "02-del-fn",
+  "kind": "rust",
+  "before": "02-del-fn.rs",
+  "after": "02-del-fn.after.rs",
+  "expect": {
+    "ops": [
+      "del"
+    ],
+    "notOps": [
+      "add"
+    ]
+  }
+}

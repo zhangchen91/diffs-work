@@ -1,0 +1,27 @@
+---
+title: 人机闭环：输入与输出
+description: 批注类工具规范 human→agent 的输入，diffs.work 规范 agent→human 的输出差异。
+group: Integrate
+order: 3
+lang: zh
+---
+
+## 两个方向
+
+```
+        人 ───── 计划 / 批注 / 问题 ─────▶ agent     （输入规范化）
+        人 ◀──── 结果 / 改动 / 差异 ───── agent     （输出规范化：diffs.work）
+```
+
+1. agent 每产出一次改动，就用 `diff_compare` 生成结构化差异；
+2. 差异进入 Inbox，人按「哪些 hunk 真的要盯」快速判断；
+3. 人的反馈（接受 / 拒绝 / 标注）再回到 agent。
+
+## 当前进度
+
+| 环节 | 状态 |
+|---|---|
+| `diff_compare` 工具（DSH） | ✅ 已实现 |
+| 本地 Inbox 列表 | ✅ 已实现 |
+| 浏览器扩展右键对比 | ✅ 已实现（开发态加载） |
+| 批注回传 | 🚧 规划：`~/.diffs/inbox/*.json` + CLI 读取 |

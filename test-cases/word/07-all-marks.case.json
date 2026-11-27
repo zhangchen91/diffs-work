@@ -1,0 +1,15 @@
+{
+  "name": "07-all-marks",
+  "kind": "word",
+  "before": "07-all-marks.before.docx",
+  "after": "07-all-marks.after.docx",
+  "expect": {
+    "ops": [
+      "add",
+      "del",
+      "move"
+    ],
+    "notOps": []
+  },
+  "note": "四种变更同现：改句式、改金额、删整条、增整条、互换两条顺序。改以增+删表示"
+}

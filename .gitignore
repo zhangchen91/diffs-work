@@ -1,0 +1,72 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# builds
+out/
+.next/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# wrangler / cloudflare
+.wrangler/
+.dev.vars
+
+# os / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/*.log
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+!vendored/engine/**/publicKey.pem
+
+# generated media probes
+*.log
+# Rust engine sources: kept out of the public repo on purpose.
+# Only the compiled WASM artifacts (apps/website/public/engine/*) are published.
+apps/engine-core/
+
+
+# sample output written by the demo page, not source
+apps/website/public/examples/*.diff
+
+# CodeGraph's own transient database lives here; only its rules file is tracked.
+.codegraph/*
+!.codegraph/.gitignore
+
+# A stale pre-monorepo build output kept locally; the live site is apps/website.
+/website/
+
+# local deploy bookkeeping (project ids, timestamps of this machine's last push)
+.deploy/
+
+# The DSH plugin ships compiled output to npm; the repo keeps only its TypeScript source.
+apps/dsh-plugin/lib/
+# CLI and extension are published as compiled bundles; the repo keeps TypeScript.
+apps/cli/lib/
+apps/chrome-extension/dist/
+
+# Astro build cache
+.astro/
+
+# Sample mirrors: written by `pnpm sync:examples` from the `examples/` tree.
+apps/website/public/examples/
+apps/local/public/examples/
+
+# Agent scratch and engine source backups. `.engine-backup/` held a copy of the kernel's Rust
+# source — which is deliberately not public — and it reached the public repository once. These
+# patterns make that impossible to repeat by accident.
+.codegraph/
+.engine-backup/
+*.engine-backup/
+.scratch/
+
+# Test bundles: written by scripts/build-*-test.mjs before every test run.
+.test/
+.scratch-*/

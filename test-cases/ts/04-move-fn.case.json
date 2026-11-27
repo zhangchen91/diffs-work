@@ -1,0 +1,12 @@
+{
+  "name": "04-move-fn",
+  "kind": "ts",
+  "before": "04-move-fn.ts",
+  "after": "04-move-fn.after.ts",
+  "expect": {
+    "ops": [
+      "move"
+    ],
+    "notOps": []
+  }
+}

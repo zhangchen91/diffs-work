@@ -1,0 +1,29 @@
+{
+  "name": "@diffs/diff-tool",
+  "version": "0.1.0",
+  "description": "The one contract every agent integration registers: diff.compare. (chrome-extension / dsh-plugin / local)",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "dependencies": {
+    "@diffs/core-code": "workspace:*",
+    "@diffs/core-text": "workspace:*",
+    "@diffs/diff-core": "workspace:*",
+    "@diffs/dom-utils": "workspace:*",
+    "@diffs/shared": "workspace:*",
+    "@diffs/core-ooxml": "workspace:*"
+  },
+  "sideEffects": false,
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.7",
+    "typescript": "5.9.2"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

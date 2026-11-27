@@ -1,0 +1,68 @@
+---
+title: DeepSeek Harness plugin
+description: Registers the diff_compare tool and /diff-* commands so an agent's changes arrive as structured diffs.
+group: Integrate
+order: 1
+lang: en
+---
+
+## What it does
+
+diffs.work's DSH plugin turns an agent's output into something a person can review:
+
+- registers **`diff_compare`**: one call returns a structured diff (hunks, line numbers, +/− counts, changed symbols);
+- registers **`/diff-open`** and **`/diff-last`**: open the local viewer, or diff against the previous git revision;
+- records every comparison in the **inbox** (`~/.diffs/diffs/*.json`).
+
+## Install
+
+```bash
+pnpm build:plugin                                       # build lib/ first
+dsh plugin --profile <name> add "$PWD/apps/dsh-plugin"   # absolute path, and --profile is required
+```
+
+Neither can be dropped: `dsh plugin` is a pnpm wrapper and without `--profile` it does not know
+which profile to install into; a relative path is parsed as a package name and lands on a different
+package. Both were measured.
+
+## The contract
+
+Arguments: `old` / `new` (paths), `revision` (git ref), `context`, `maxHunks`, `format` (`json` or `unified`).
+Returns `kind`, `family`, `added`, `removed`, `hunks[]`, `symbols` (code) and a `summary`.
+Binary families return `kind: "binary"` with a pointer — never tens of megabytes inside a tool call.
+See the [tool contract](/en/reference/tool-contract/).
+
+If the plugin registered correctly, asking the agent to compare two files shows a card. Plain
+text with no card means the plugin is not in the active profile — `dsh plugin list` should show it.
+
+## Arguments
+
+| Argument | Type | Meaning |
+|---|---|---|
+| `old` | string | path to the old file |
+| `new` | string | path to the new file; may be omitted when `revision` is set |
+| `revision` | string | a git revision (e.g. `HEAD~1`) to compare the working tree against |
+| `cwd` | string | base for relative paths |
+| `context` | int | lines of context per hunk (default 3) |
+| `maxHunks` | int | maximum hunks (default 40) |
+| `format` | `json` \| `unified` | output shape |
+
+The returned structure is [portable@1](/en/reference/portable/). Binary families (Office, PDF)
+report their family; tens of megabytes never go through a tool call.
+
+## The commands that come with it
+
+| Command | What it does |
+|---|---|
+| `/diff-open` | opens the most recent comparison in the local viewer |
+| `/diff-last` | compares against the previous round of changes |
+
+## Getting good use out of it
+
+Put [the agent-facing instructions](/en/integrate/agents/) into the agent's instructions: when to
+call it, the four rules, and the hard requirement that a summary never replaces the diff.
+
+## Status
+
+**Shipped.** The source is in `apps/dsh-plugin/` (open). It is **not published to npm yet** —
+build it from the repository and install it by local path.

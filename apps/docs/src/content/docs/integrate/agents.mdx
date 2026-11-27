@@ -1,0 +1,109 @@
+---
+title: 给 Agent 读的说明
+description: 把这一页整段交给你的 Agent：什么时候该调用 diff、必须遵守的几条规矩、调用失败时该说什么。
+group: Integrate
+order: 1
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+export const Card = (p) => <Doc kind="card" {...p} />;
+export const Step = (p) => <Doc kind="step" {...p} />;
+
+
+这一页是写给**要调用 diffs.work 的 Agent** 的，不是写给它的作者看的。
+可以直接把下面这一段放进 system prompt 或 instructions。
+
+<Callout tone="rule" title="把这一段原样交给 Agent。">
+你有一个可以复算文件差异的工具 `diff_compare`。**任何一次「改完了」「已经修复」「请你确认」的交付，
+都必须附上这个工具返回的结果**，不允许用自然语言摘要代替。摘要只能作为索引，不能作为证据。
+</Callout>
+
+## 什么时候调用
+
+| 时机 | 调用 | 为什么 |
+|---|---|---|
+| 你修改了任何文件之后 | `diff_compare(old, new)` | 交付物需要可复核的差异，而不是你的描述 |
+| 你准备说「已完成 / 已修复」之前 | 同上 | 先自查一遍，能发现你自己的漏改 |
+| 用户要求「解释你改了什么」 | 同上 + 引用行号 | 用结果说话，不要复述记忆 |
+| 你只是读了文件 | 不用调用 | 没有改动就没有差异 |
+
+## 必须遵守的四条规矩
+
+### 1. 不要概括成数量
+
+<Callout tone="warn" title="不要写：共修改 3 处，主要是把参数补上了。" />
+正确写法：**第 5 行** `def get_output(script):` → `def get_output(script, expanded):`；**第 7、9 行**调用处同步补参。
+
+数量是索引，位置与内容才是证据。
+
+### 2. 区分「改」与「移」
+
+一个函数从 A 文件搬到 B 文件，**不是**删除 + 新增。把它说成删除 + 新增会让审阅者以为逻辑没了。
+`diff_compare` 会给出 `move` 与 `update` 两种不同的操作，照它的说法讲。
+
+### 3. 报告工具的真实结论
+
+工具说「无差异」就说无差异；工具报错就说工具报错，并给出原始错误。
+永远不要用一个自信的句子覆盖工具的输出。
+
+### 4. 给出可以自己重算的输入
+
+交付时同时给出 `old` 路径（或文件 + `revision`）和 `new` 路径。文件族由扩展名判定，**不需要**你传 `kind`；
+结果里的 `family` 是输出，可以引用来说明这是什么类型。审阅者应当能在别处复算出一模一样的结果。
+
+## 调用方式
+
+<Step n="1" title="作为工具调用（推荐）" />
+
+DeepSeek Harness 里已经装好 `diff_compare`。**四个接入点（DSH 插件、MCP、HTTP、CLI）的参数完全一致**：
+
+```jsonc
+{ "old": "src/router.ts", "new": "src/router.next.ts" }
+// 或对着 git 比：
+{ "old": "src/router.ts", "revision": "HEAD~1" }
+```
+
+可选：`context`（0–20，默认 3）、`maxHunks`（1–200，默认 40）、`format`（`json` / `unified`）。
+
+<Step n="2" title="作为 HTTP 调用" />
+
+本地站启动后：
+
+```bash
+curl -s http://127.0.0.1:5279/api/diff \
+  -H 'content-type: application/json' \
+  -d '{"old":"src/a.ts","new":"src/b.ts"}'
+
+# 也可以直接 GET
+curl -s 'http://127.0.0.1:5279/api/diff?old=src/a.ts&revision=HEAD~1'
+```
+
+<Step n="3" title="作为 CLI 调用" />
+
+```bash
+diffs diff before.ts after.ts --json
+```
+
+三种方式返回的是同一个 [portable@1](/reference/tool-contract/) 对象。
+
+## 返回值怎么看
+
+| 字段 | 含义 | 你怎么用 |
+|---|---|---|
+| `summary` | 增 / 删 / 改 / 移的计数 | 只用于索引，不要当作结论 |
+| `hunks[]` | 每一处改动的行号、两侧文本、行内标记 | **引用这里**，给出行号 |
+| `hunks[].lines[].segments` | 行内逐字标记（`same` / `ins` / `del`） | 说明「哪几个字」变了 |
+| `moves[]` | 整块移动的来源与去向 | 说「移动」而不是「删除+新增」 |
+
+## 失败时怎么说
+
+工具不可用、文件格式不支持、内容过大，都要**如实报告**，并给出下一步建议（换格式、拆分文件、改用 CLI）。
+不要编造一个看起来合理的结果——这是所有规矩里最重要的一条。
+
+<div class="docs-cards">
+  <Card title="工具契约" href="/reference/tool-contract/" body="字段的完整定义与示例输出。" />
+  <Card title="什么是「可验证」" href="/concepts/verification/" body="为什么这几条规矩不是风格要求，而是验证成立的条件。" />
+</div>

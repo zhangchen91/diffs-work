@@ -1,0 +1,15 @@
+{
+  "name": "06-mixed",
+  "kind": "ts",
+  "before": "06-mixed.ts",
+  "after": "06-mixed.after.ts",
+  "expect": {
+    "ops": [
+      "add",
+      "del",
+      "mod",
+      "move"
+    ],
+    "notOps": []
+  }
+}

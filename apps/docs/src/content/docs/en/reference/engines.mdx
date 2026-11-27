@@ -1,0 +1,21 @@
+---
+title: Engines and loading
+description: One engine per family; the first screen never preloads a heavy engine.
+group: Reference
+order: 3
+lang: en
+---
+
+## Hard rules
+
+1. `ENGINE_REGISTRY` in `packages/engine-bundle/src/registry.ts` is the only source of truth.
+2. The first screen loads only the small text, Markdown and code engines.
+3. every family but PDF shares one ~600 KB kernel, fetched on the first comparison; PDF additionally fetches pdf.js (about 1.8 MB: 0.4 MB of `pdf.mjs` plus a 1.4 MB worker).
+4. Hovering may `preconnect`; it never downloads.
+5. Switching CDNs is a change to `base` only.
+
+## i18n
+
+User-facing copy is Unicode MessageFormat 2 (`packages/mf2`); messages live in
+`packages/i18n/src/messages/`. To add a language: copy `en.ts`, translate the values, register the tag in
+`LOCALES`, then run `pnpm test` — it fails until every key is present.

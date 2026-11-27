@@ -1,0 +1,27 @@
+---
+title: diff.compare 工具契约
+description: 所有集成面（DSH / 扩展 / CLI / 本地站）共享的唯一比对契约。
+group: Reference
+order: 1
+lang: zh
+---
+
+## 参数
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `old` | string | 是* | 旧文件路径 |
+| `new` | string | 是* | 新文件路径；与 `revision` 连用时可为同一路径 |
+| `revision` | string | 否 | git 版本（如 `HEAD~1`），与工作区对比 |
+| `cwd` | string | 否 | 相对路径基准 |
+| `context` | integer | 否 | hunk 上下文行数，默认 3，最大 20 |
+| `maxHunks` | integer | 否 | hunk 上限，默认 40，最大 200 |
+| `format` | `json` \| `unified` | 否 | 输出形态，默认 json |
+
+## HTTP 形态
+
+```bash
+curl -s -X POST http://127.0.0.1:5279/api/diff \
+  -H 'content-type: application/json' \
+  -d '{"old":"examples/parse-v1.ts","new":"examples/parse-v2.ts"}'
+```

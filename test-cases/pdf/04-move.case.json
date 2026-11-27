@@ -1,0 +1,13 @@
+{
+  "name": "04-move",
+  "kind": "pdf",
+  "before": "04-move.before.pdf",
+  "after": "04-move.after.pdf",
+  "expect": {
+    "ops": [
+      "move"
+    ],
+    "notOps": []
+  },
+  "note": "PDF 在浏览器端比对（pdf.js），不在 wasm 里"
+}

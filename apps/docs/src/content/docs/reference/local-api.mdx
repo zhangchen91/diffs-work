@@ -1,0 +1,20 @@
+---
+title: 本地站 API
+description: diffs local 在 127.0.0.1:5279 暴露的最小 JSON API。
+group: Reference
+order: 2
+lang: zh
+---
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/health` | `{ ok, version, cwd }` |
+| GET/POST | `/api/diff` | 比对（见工具契约） |
+| GET | `/api/file?path=` | 按路径读文件 |
+| GET | `/api/inbox` | 最近的对比记录 |
+| POST | `/api/inbox` | 写入一条记录 |
+| POST | `/api/open` | 写入并返回 `{ id, url }` |
+| POST | `/api/pair` | 暂存一对文件（base64），返回可用 id |
+| GET | `/api/pair/<id>/config` | 给旧版渲染器的 diff.json 形态 |
+
+只监听 `127.0.0.1`；不复制文件内容；数据全部在 `~/.diffs/`。

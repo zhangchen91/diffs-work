@@ -1,0 +1,83 @@
+---
+title: git 与 jj
+description: 把 diffs 接进版本控制：提交前、合并前、看别人的改动时，都用同一套判定。
+group: Integrate
+order: 3
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+版本控制是最天然的调用点：每一次提交、每一次评审，都在回答「这次到底改了什么」。
+diffs.work 不替代 git，它只是给 git 的输出**加一层可读、可复算的判断**。
+
+## git difftool
+
+把 diffs 注册成外部工具：
+
+> 下面用 `diffs <命令>` 表示 CLI。它**还没发布到 npm**，所以请先 `pnpm build:cli`，
+> 再把 `diffs` 换成 `node apps/cli/lib/bin.js`。
+
+```bash
+git config --global difftool.diffs.cmd 'node apps/cli/lib/bin.js diff --open "$LOCAL" "$REMOTE"'
+git config --global difftool.prompt false
+git config --global diff.tool diffs
+
+git difftool              # 工作区 vs HEAD
+git difftool HEAD~3       # 最近三次提交的合并差异
+git difftool --dir-diff   # 目录级对比：只处理有差异的文件
+```
+
+- `"$LOCAL"` / `"$REMOTE"` 是 git 交给外部工具的两个临时文件路径；
+- `--open` 在本地站里打开结果（`diffs local` 需要在跑）；
+- 加 `--no-prompt` 可以跳过逐个确认。
+
+<Callout tone="note" title="为什么不是「git 的 diff 的包装」。">
+包装 git 的文本输出只能看到 git 已经丢掉的信息（哪几行是一对「改」已经不可恢复）。
+这里拿到的是两个**文件**，判定由 diffs 自己做，所以才能报出「改」与「移动」。
+</Callout>
+
+## 合并前复核
+
+```bash
+# 当前分支相对主干的全部改动，只在有差异的文件上跑
+git diff --name-only origin/main... | xargs -r -n2 sh -c 'diffs diff --open "$0" "$1"'
+```
+
+也可以直接在 CI 里拿结果做记录（`--json` 输出见 [portable@1](/reference/portable/)）：
+
+```bash
+diffs diff a.ts b.ts --json | jq '.counts'
+```
+
+## jj
+
+jj 的 diff-formatter 协议要求外部程序**读入一段 unified diff 并输出着色后的文本**，因此需要一个
+「读 stdin 上的补丁」入口，而不是直接跑内核。
+
+```bash
+jj config set --user ui.diff-formatter diffs
+```
+
+<Callout tone="warn" title="状态：规划中。">
+这一项**还没有实现**，配置写上去会因为找不到可执行文件而失败。打算先补 `diffs render-diff` 这个子命令，
+再回来把这两行变成可用的配置。
+</Callout>
+
+## 和 git 自带的 diff 有什么区别
+
+| | `git diff` | diffs.work |
+|---|---|---|
+| 行级增删 | ✅ | ✅ |
+| 一条「改」 vs 「删 + 加」 | ❌（只有 `-` 和 `+`） | ✅ |
+| 行内定位到具体字符 | ⚠️ 只有 word-diff，且另一种模式 | ✅ 与判定同源 |
+| 整块移动 | ❌ | ✅（粒度见[代码页](/formats/code/)） |
+| Office / PDF | ❌（二进制） | ✅ |
+| 可分享的浏览器视图 | ❌ | ✅ |
+
+## 相关
+
+- [代码比对怎么判](/formats/code/)——「改」与「挪」的规则
+- [CLI 与本地站](/integrate/cli/)——`diffs` 命令的完整用法

@@ -1,0 +1,12 @@
+{
+  "name": "02-del-slide",
+  "kind": "ppt",
+  "before": "02-del-slide.before.pptx",
+  "after": "02-del-slide.after.pptx",
+  "expect": {
+    "ops": [
+      "del"
+    ],
+    "notOps": []
+  }
+}

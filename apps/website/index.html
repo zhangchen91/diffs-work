@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- replaced with the build stamp so the document's cache key changes on every deploy;
+         Cloudflare's default HTML cache otherwise serves a stale copy for up to a week -->
+    <meta name="diffs-build" content="__BUILD_STAMP__" />
+    <title>diffs.work — Diff everything in your browser</title>
+    <meta name="description" content="本地优先的差异对比：docx / xlsx / pptx / pdf / markdown / 代码，全部在浏览器里由 WASM 处理，文件不上传服务器。" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="diffs.work — Diff everything, in your browser" />
+    <meta property="og:description" content="Local-first diff for docs, sheets, slides, PDFs, markdown and code. WASM-powered, zero upload." />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

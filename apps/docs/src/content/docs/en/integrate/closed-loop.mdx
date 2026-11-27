@@ -1,0 +1,27 @@
+---
+title: The human–agent loop
+description: Annotation tools normalise human→agent input; diffs.work normalises agent→human output.
+group: Integrate
+order: 3
+lang: en
+---
+
+## Two directions
+
+```
+        person ───── plans / notes / questions ─────▶ agent   (normalised input)
+        person ◀──── results / changes / diffs ────── agent   (normalised output: diffs.work)
+```
+
+1. Every time an agent changes something, it calls `diff_compare` for a structured diff.
+2. The diff lands in the inbox so the person can see which hunks actually need attention.
+3. The person's feedback (accept, reject, annotate) goes back to the agent.
+
+## Status
+
+| Step | State |
+|---|---|
+| `diff_compare` tool (DSH) | shipped |
+| Local inbox | shipped |
+| Browser extension | shipped (unpacked) |
+| Annotation round-trip | planned: `~/.diffs/inbox/*.json` plus CLI reads |

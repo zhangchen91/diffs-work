@@ -1,0 +1,16 @@
+{
+  "name": "03-mod-const",
+  "kind": "rust",
+  "before": "03-mod-const.rs",
+  "after": "03-mod-const.after.rs",
+  "expect": {
+    "ops": [
+      "mod"
+    ],
+    "notOps": [
+      "add",
+      "del",
+      "move"
+    ]
+  }
+}

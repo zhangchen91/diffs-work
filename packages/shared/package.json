@@ -1,0 +1,13 @@
+{
+  "name": "@diffs/shared",
+  "version": "0.1.0",
+  "description": "Shared helpers for diffs.work surfaces (website / docs / local / plugin / extension).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "license": "MIT"
+}

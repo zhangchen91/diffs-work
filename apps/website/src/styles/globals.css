@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* The diff views live in a workspace package; Tailwind v4 only scans this project by default,
+   so classes like `md:flex-row` inside @diffs/diff-ui were never generated and the layout
+   silently stayed one-column. */
+@source "./../../../../packages/diff-ui/src/**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design tokens are theme-driven. `@theme inline` makes every utility read the
+ * variable at use time, so `bg-panel` / `text-slate-400` / `border-line` follow
+ * html.theme-* without a second class on any element.
+ */
+@theme inline {
+  --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ink: var(--c-ink);
+  --color-panel: var(--c-panel);
+  --color-panel-2: var(--c-panel-2);
+  --color-line: var(--c-line);
+  --color-brand: var(--c-brand);
+  --color-brand-2: var(--c-brand-2);
+  --color-add: var(--c-add);
+  --color-del: var(--c-del);
+  --color-mod: var(--c-mod);
+  --color-move: var(--c-move);
+
+  /* text scale: one variable per slate step the UI uses */
+  --color-slate-50: var(--c-fg);
+  --color-slate-100: var(--c-fg);
+  --color-slate-200: var(--c-fg-strong);
+  --color-slate-300: var(--c-fg);
+  --color-slate-400: var(--c-muted);
+  --color-slate-500: var(--c-muted);
+  --color-slate-600: var(--c-faint);
+  --color-slate-700: var(--c-line);
+  --color-slate-800: var(--c-panel-2);
+  --color-slate-900: var(--c-panel);
+  --color-white: var(--c-fg-strong);
+}
+
+/* ---- theme 1: obsidian (default, dark) ---------------------------------- */
+:root,
+html.theme-obsidian {
+  color-scheme: dark;
+  --c-ink: #05060a;
+  --c-panel: #0b0d13;
+  --c-panel-2: #11141c;
+  --c-line: #1e222d;
+  --c-brand: #6ee7b7;
+  --c-brand-2: #38bdf8;
+  --c-add: #3fb950;
+  --c-del: #f85149;
+  --c-mod: #d29922;
+  --c-move: #a78bfa;
+  --c-fg-strong: #f4f6fa;
+  --c-fg: #e6e8ee;
+  --c-muted: #8b93a7;
+  --c-faint: #5c6478;
+  --bg: var(--c-ink);
+  --fg: var(--c-fg);
+}
+
+/* ---- theme 2: paper (light) --------------------------------------------- */
+html.theme-paper {
+  color-scheme: light;
+  --c-ink: #fbfaf7;
+  --c-panel: #ffffff;
+  --c-panel-2: #f1eee7;
+  --c-line: #ddd8cc;
+  --c-brand: #0f766e;
+  --c-brand-2: #0369a1;
+  --c-add: #15803d;
+  --c-del: #b91c1c;
+  --c-mod: #b45309;
+  --c-move: #6d28d9;
+  --c-fg-strong: #1b1a17;
+  --c-fg: #2c2a25;
+  --c-muted: #5f5b52;
+  --c-faint: #8a8478;
+  --bg: var(--c-ink);
+  --fg: var(--c-fg);
+}
+
+/* ---- theme 3: forest (dark green, low glare) ---------------------------- */
+html.theme-forest {
+  color-scheme: dark;
+  --c-ink: #06120e;
+  --c-panel: #0b1a15;
+  --c-panel-2: #0f241c;
+  --c-line: #1d3a30;
+  --c-brand: #7ee2a8;
+  --c-brand-2: #5eead4;
+  --c-add: #4ade80;
+  --c-del: #fb7185;
+  --c-mod: #fbbf24;
+  --c-move: #c4b5fd;
+  --c-fg-strong: #eefaf3;
+  --c-fg: #d8ece2;
+  --c-muted: #93b3a5;
+  --c-faint: #6a8a7c;
+  --bg: var(--c-ink);
+  --fg: var(--c-fg);
+}
+
+html {
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+/*
+ * Tailwind's alpha utilities mix in oklab; with a very dark themed colour that
+ * lands on a visibly grey fill (`bg-panel/50` over the near-black page). Mix in
+ * sRGB instead so "50% of a dark panel" stays dark in every theme.
+ */
+@supports (color: color-mix(in srgb, red, blue)) {
+  .bg-panel\/50 {
+    background-color: color-mix(in srgb, var(--c-panel) 50%, transparent);
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 35%, transparent);
+}
+
+/* thin scrollbars for panes */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2f3d transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #2a2f3d;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.grid-bg {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+.glow {
+  background: radial-gradient(600px circle at 50% 0%, color-mix(in srgb, var(--color-brand) 14%, transparent), transparent 70%);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.5s ease both;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+/* feedback inside the white document panes (Word, PowerPoint, Excel): on white the
+   selected change needs a visible ring, not a dark one. */
+.dx-focus-flash {
+  outline: 2px solid #6ee7b7 !important;
+  outline-offset: 1px;
+  background: rgba(110, 231, 183, 0.18) !important;
+  transition: background 0.2s ease;
+}

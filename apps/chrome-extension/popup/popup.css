@@ -1,0 +1,63 @@
+:root {
+  color-scheme: dark;
+  --bg: #05060a;
+  --panel: #0b0d13;
+  --line: #1e222d;
+  --fg: #e6e8ee;
+  --muted: #8b93a7;
+  --brand: #6ee7b7;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  width: 380px;
+  padding: 12px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 12.5px/1.6 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.brand { font-size: 15px; font-weight: 600; }
+.brand span { color: var(--brand); }
+.tag { font-size: 11px; color: var(--brand); border: 1px solid rgba(110, 231, 183, 0.3); border-radius: 999px; padding: 1px 8px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.field span, .label { font-size: 11px; color: var(--muted); }
+input[type="text"] {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+}
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+textarea {
+  height: 96px;
+  resize: vertical;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: 11.5px/1.5 ui-monospace, Menlo, monospace;
+}
+input[type="file"] { font-size: 11px; color: var(--muted); }
+.actions { display: flex; gap: 8px; margin: 10px 0 8px; }
+button {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 7px 8px;
+  font: inherit;
+  cursor: pointer;
+}
+button.primary { background: var(--brand); color: #052e1c; border-color: transparent; font-weight: 600; }
+button:hover { border-color: #3a4152; }
+.inbox { max-height: 120px; overflow: auto; }
+.item { border-top: 1px solid var(--line); padding: 5px 0; color: var(--muted); font-size: 11.5px; }
+.item b { color: var(--fg); font-weight: 500; }
+.hint { margin-top: 8px; color: #5b6273; font-size: 11px; }

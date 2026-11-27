@@ -1,0 +1,13 @@
+{
+  "name": "05-move-and-edit",
+  "kind": "ts",
+  "before": "05-move-and-edit.ts",
+  "after": "05-move-and-edit.after.ts",
+  "expect": {
+    "ops": [
+      "move",
+      "mod"
+    ],
+    "notOps": []
+  }
+}

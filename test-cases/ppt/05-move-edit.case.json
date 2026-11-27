@@ -1,0 +1,14 @@
+{
+  "name": "05-move-edit",
+  "kind": "ppt",
+  "before": "05-move-edit.before.pptx",
+  "after": "05-move-edit.after.pptx",
+  "expect": {
+    "ops": [
+      "add",
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "幻灯片重排未识别为移动"
+}

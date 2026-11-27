@@ -1,0 +1,16 @@
+{
+  "name": "@diffs/core-markdown",
+  "version": "0.3.0",
+  "description": "Markdown block-AST diff: headings / lists / tables / code / quotes, inline marks, moved blocks.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@diffs/diff-core": "workspace:*"
+  },
+  "sideEffects": false,
+  "license": "MIT"
+}

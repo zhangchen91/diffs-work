@@ -1,0 +1,12 @@
+{
+  "name": "03-mod-cell",
+  "kind": "excel",
+  "before": "03-mod-cell.before.xlsx",
+  "after": "03-mod-cell.after.xlsx",
+  "expect": {
+    "ops": [
+      "mod"
+    ],
+    "notOps": []
+  }
+}

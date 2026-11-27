@@ -1,0 +1,115 @@
+---
+title: Instructions to hand an agent
+description: "Give this page to your agent as-is: when to call the diff tool, the four rules it must keep, and what to say when the call fails."
+group: Integrate
+order: 1
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+export const Card = (p) => <Doc kind="card" {...p} />;
+export const Step = (p) => <Doc kind="step" {...p} />;
+
+This page is written for **an agent that will call diffs.work**, not for its author.
+The block below can go straight into a system prompt or an instructions file.
+
+<Callout tone="rule" title="Hand this paragraph to the agent unchanged.">
+You have a tool, `diff_compare`, that recomputes the difference between two versions of a file.
+**Every delivery that says "done", "fixed", or "please confirm" must attach what that tool
+returned.** A natural-language summary may index the result; it may never replace it.
+</Callout>
+
+## When to call
+
+| Moment | Call | Why |
+|---|---|---|
+| After you have modified any file | `diff_compare(old, new)` | The deliverable needs a recomputable difference, not your description |
+| Before you say "done" or "fixed" | The same | Self-check once; it catches your own omissions |
+| When asked "what did you change" | The same, then quote line numbers | Answer from the result, not from memory |
+| When you only read files | Do not call | No change, no difference |
+
+## The four rules
+
+### 1. Never reduce a diff to a count
+
+<Callout tone="warn" title="Do not write &quot;three changes made&quot;" />
+Write instead: **line 5** `def get_output(script):` → `def get_output(script, expanded):`;
+the call sites on **lines 7 and 9** gained the same argument.
+
+A count is an index. Position and content are the evidence.
+
+### 2. Distinguish "changed" from "moved"
+
+A function relocated from file A to file B is **not** a delete plus an insert. Calling it a delete
+tells the reviewer that logic was lost. `diff_compare` reports `move` and `update` separately; use
+the words it uses.
+
+### 3. Report the tool's actual result
+
+If the tool says there is no difference, say there is none. If it errors, quote the error.
+Never overwrite the tool's output with a confident sentence.
+
+### 4. Hand over inputs someone could re-run
+
+Give the `old` path (or the file plus a `revision`), and the `new` path. The file family is
+detected from the extension, so you do not pass a `kind`. A reviewer should be able to reproduce the exact
+same result elsewhere.
+
+## How to call
+
+<Step n="1" title="As a tool call (recommended)" />
+
+Inside DeepSeek Harness the tool is already registered. **All four surfaces — the Harness plugin,
+MCP, HTTP and the CLI — take the same arguments:**
+
+```jsonc
+{ "old": "src/router.ts", "new": "src/router.next.ts" }
+// or against git:
+{ "old": "src/router.ts", "revision": "HEAD~1" }
+```
+
+Optional: `context` (0–20, default 3), `maxHunks` (1–200, default 40), `format` (`json` /
+`unified`).
+
+<Step n="2" title="Over HTTP" />
+
+With the local server running:
+
+```bash
+curl -s http://127.0.0.1:5279/api/diff \
+  -H 'content-type: application/json' \
+  -d '{ "old": "src/a.ts", "new": "src/b.ts" }'
+
+# or straight from git, as a GET
+curl -s 'http://127.0.0.1:5279/api/diff?old=src/a.ts&revision=HEAD~1'
+```
+
+<Step n="3" title="From the command line" />
+
+```bash
+diffs diff before.ts after.ts --json
+```
+
+All three return the same [portable@1](/en/reference/portable/) object.
+
+## Reading the result
+
+| Field | Meaning | How to use it |
+|---|---|---|
+| `summary` | Counts of added / removed / changed / moved | An index only; never the conclusion |
+| `hunks[]` | Each change's rows, both sides, and inline marks | **Quote from here**, with line numbers |
+| `hunks[].lines[].segments` | Per-character marks (`same` / `ins` / `del`) | Say which characters changed |
+| `moves[]` | Where a block came from and went to | Say "moved", not "deleted and added" |
+
+## When it fails
+
+If the tool is unavailable, the format unsupported or the input too large, **say exactly that**,
+with the next step (different format, split the file, use the CLI). Never invent a plausible
+result. This is the most important of all the rules.
+
+<div class="docs-cards">
+  <Card title="The tool contract" href="/en/reference/tool-contract/" body="The full field definitions and a sample response." />
+  <Card title="What verifiable means" href="/en/concepts/verification/" body="Why these rules are conditions for verification, not style preferences." />
+</div>

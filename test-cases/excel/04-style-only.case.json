@@ -1,0 +1,14 @@
+{
+  "name": "04-style-only",
+  "kind": "excel",
+  "before": "04-style-only.before.xlsx",
+  "after": "04-style-only.after.xlsx",
+  "expect": {
+    "ops": [],
+    "notOps": [
+      "add",
+      "del",
+      "mod"
+    ]
+  }
+}

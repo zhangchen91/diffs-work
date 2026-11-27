@@ -1,0 +1,13 @@
+{
+  "name": "01-add",
+  "kind": "pdf",
+  "before": "01-add.before.pdf",
+  "after": "01-add.after.pdf",
+  "expect": {
+    "ops": [
+      "add"
+    ],
+    "notOps": []
+  },
+  "note": "PDF 在浏览器端比对（pdf.js），不在 wasm 里"
+}

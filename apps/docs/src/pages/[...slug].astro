@@ -1,0 +1,53 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Sidebar from "../layouts/Sidebar.astro";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+  const ids = new Set(docs.map((d) => d.id));
+  return docs.map((doc) => {
+    const id = doc.id;
+    const isEn = id.startsWith("en/");
+    const strip = isEn ? id.slice(3) : id;
+    const alt = isEn ? strip : `en/${strip}`;
+    return {
+      params: { slug: id },
+      props: { doc, altHref: ids.has(alt) ? `/${alt}/` : undefined },
+    };
+  });
+}
+
+const { doc, altHref } = Astro.props;
+const { Content, headings } = await render(doc);
+const lang = doc.data.lang === "en" ? "en" : "zh";
+const groupLabel: Record<string, Record<string, string>> = {
+  en: { Start: "Getting started", Concepts: "Concepts", Formats: "File formats", Integrate: "Integrations", Reference: "Reference" },
+  zh: { Start: "开始", Concepts: "核心概念", Formats: "文件类型", Integrate: "接入", Reference: "参考" },
+};
+// On-page navigation: h2 and h3 only; a page with fewer than three sections does not need it.
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+<Base title={`${doc.data.title} · diffs.work docs`} description={doc.data.description} lang={lang} altHref={altHref}>
+  <div class="docs-layout">
+    <Sidebar lang={lang} current={doc.id} />
+    <div class="docs-main">
+      <article class="docs-prose">
+        <header class="docs-header">
+          <div class="docs-eyebrow">{groupLabel[lang][doc.data.group] ?? doc.data.group}</div>
+          <h1>{doc.data.title}</h1>
+          <p>{doc.data.description}</p>
+        </header>
+        <Content />
+      </article>
+      {toc.length >= 3 ? (
+        <nav class="docs-toc">
+          <div class="docs-toc-title">{lang === "en" ? "On this page" : "本页内容"}</div>
+          {toc.map((h) => (
+            <a href={`#${h.slug}`} class:list={[h.depth === 3 && "lvl3"]}>{h.text}</a>
+          ))}
+        </nav>
+      ) : null}
+    </div>
+  </div>
+</Base>

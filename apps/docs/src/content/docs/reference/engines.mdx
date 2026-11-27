@@ -1,0 +1,31 @@
+---
+title: 引擎与加载策略
+description: 一族一引擎，首页永不预加载重引擎。
+group: Reference
+order: 3
+lang: zh
+---
+
+## 硬约束
+
+1. `packages/engine-bundle/src/registry.ts` 的 `ENGINE_REGISTRY` 是唯一真源；
+2. 首屏只加载站点自身的 JS，任何引擎都不在首屏请求；
+3. 只有 PDF 还需要额外下载 pdf.js（约 1.8 MB：`pdf.mjs` 0.4 MB + worker 1.4 MB）；
+4. 其它族（代码 / Markdown / 纯文本 / Word / Excel / PowerPoint）共用同一个内核 `diffs-engine.wasm`（约 600 KB）；
+5. hover 只能 `preconnect`，换 CDN 只改 `base`。
+
+| 引擎 | 服务的族 | 何时下载 |
+|---|---|---|
+| `diffs-engine.wasm` | 代码 · Markdown · 纯文本 · Word · Excel · PowerPoint | 第一次对比时（已缓存） |
+| `pdf.mjs` + worker | PDF | 第一次打开 PDF 对比时 |
+
+> 这里曾经还列着 `tessdata`（扫描件 OCR）。OCR 在产品里没有实现，那两行不成立，已删除；
+> 扫描件现在会被直接列为无法比对。模型文件仍在磁盘上，供后续使用。
+>
+> 这里曾经写着「docxodus ~30 MB，按程序集分片」。那套 .NET 渲染器已经退役：Word 现在由内核直接读 OOXML，
+> 因为没有哪一次复核需要把整页排版出来——需要的是段落、文字和搬家。
+
+## i18n
+
+界面文案是 Unicode MessageFormat 2（`packages/mf2`），消息在 `packages/i18n/src/messages/`。
+新增语言：复制 `en.ts` 翻译 → 在 `LOCALES` 注册 → `pnpm test` 检查键完整。

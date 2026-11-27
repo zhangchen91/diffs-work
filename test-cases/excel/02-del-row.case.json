@@ -1,0 +1,12 @@
+{
+  "name": "02-del-row",
+  "kind": "excel",
+  "before": "02-del-row.before.xlsx",
+  "after": "02-del-row.after.xlsx",
+  "expect": {
+    "ops": [
+      "del"
+    ],
+    "notOps": []
+  }
+}

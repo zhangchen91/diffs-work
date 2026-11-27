@@ -1,0 +1,13 @@
+{
+  "name": "02-del",
+  "kind": "pdf",
+  "before": "02-del.before.pdf",
+  "after": "02-del.after.pdf",
+  "expect": {
+    "ops": [
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "PDF 在浏览器端比对（pdf.js），不在 wasm 里"
+}

@@ -1,0 +1,27 @@
+---
+title: The diff.compare contract
+description: The one comparison contract every surface (DSH, extension, CLI, local) shares.
+group: Reference
+order: 1
+lang: en
+---
+
+## Arguments
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `old` | string | yes* | Path to the old file |
+| `new` | string | yes* | Path to the new file; may equal `old` when `revision` is used |
+| `revision` | string | no | Git ref (e.g. `HEAD~1`) to compare the working tree against |
+| `cwd` | string | no | Base for relative paths |
+| `context` | integer | no | Lines of context per hunk (default 3, max 20) |
+| `maxHunks` | integer | no | Cap on hunks (default 40, max 200) |
+| `format` | `json` \| `unified` | no | Output shape (default json) |
+
+## Over HTTP
+
+```bash
+curl -s -X POST http://127.0.0.1:5279/api/diff \
+  -H 'content-type: application/json' \
+  -d '{"old":"examples/parse-v1.ts","new":"examples/parse-v2.ts"}'
+```

@@ -1,0 +1,121 @@
+---
+title: Configuration overview
+description: "Every integration point's configuration in one place: file families, Agent, IDE, git / jj, MCP, Office. There are only three statuses — shipped, in development, planned."
+group: Reference
+order: 2
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+export const Card = (p) => <Doc kind="card" {...p} />;
+
+This page is the full version of `/#/config` on the main site: the same entries, plus where each one
+lives in the repository and the pitfalls to watch for.
+
+<Callout tone="rule" title="Status convention.">
+**Shipped** = you can use it right now; **in development** = being written, only one item at a time (none right now);
+**planned** = what it will do is clear, but work has not started. This site does not allow an entry
+that is "finished but unusable".
+</Callout>
+
+## File families
+
+| File family | Extensions | Comparison method | Views | Status |
+|---|---|---|---|---|
+| Code | `.ts .tsx .mts .js .jsx .mjs .py .rs .go .java .kt .cs .c .h .cpp .hpp .sh .sql .vue .css .html .rb .swift .php .lua .ex .scala .dart` | Line-level + per-character within lines | Unified / side-by-side / syntax column-level | Shipped |
+| Markdown | `.md .mdx` | Line-level + block-level | Unified / side-by-side | Shipped |
+| Plain text | `.txt .csv .tsv .json .yml .yaml .xml .log .ini .toml` | Line-level | Unified / side-by-side | Shipped |
+| Word | `.docx .docm` | Paragraph alignment + per-character within paragraphs | Two-column paragraphs | Shipped |
+| Excel | `.xlsx .xlsm` | Cell-level | Grid + change list | Shipped |
+| PowerPoint | `.pptx` | Slides + text paragraphs | Paged list | Shipped |
+| PDF | `.pdf` | Text layer + bounding boxes | Rendered pages + boxes | Shipped |
+| Legacy Office | `.doc .xls .ppt` | — | — | Planned |
+
+Adding an extension: just add one line to `EXT_TO_FAMILY` in `apps/website/src/lib/formats.ts`,
+mapping it into an existing family. To add a whole new family (CAD, subtitles, audio transcripts, for
+example), see [Adding a file format](/en/reference/contributing-a-format/).
+
+## Agent
+
+| Integration point | Entry | Configuration | Status |
+|---|---|---|---|
+| DeepSeek Harness | `dsh plugin --profile <name> add "$PWD/apps/dsh-plugin"` | Gives you the `diff_compare` tool and in-conversation cards | Shipped — from the repository; the package is not on npm, so `add @diffs/dsh-plugin` returns 404 |
+| MCP | `node apps/cli/lib/bin.js mcp` | See below | Shipped — from the repository; the CLI is not on npm, so `diffs` is not on `PATH` |
+| HTTP (local site) | `node apps/cli/lib/bin.js local` → `127.0.0.1:5279` | `POST /api/diff` | Shipped |
+| Node SDK | workspace reference inside the repo | `import { compareFiles } from "<repo>/packages/diff-tool/src/index.ts"` | Not on npm; the path above works with Node's type stripping |
+
+**MCP** — `diffs mcp` starts a stdio server speaking standard JSON-RPC 2.0, so any MCP-capable
+client can use it directly. It re-implements nothing: internally it calls `compareFiles`, the same
+function behind the CLI, the local site and the Harness plugin.
+
+```jsonc
+{
+  "mcpServers": {
+    "diffs": { "command": "diffs", "args": ["mcp"] }
+  }
+}
+```
+
+One tool is exposed:
+
+| Tool | Arguments | Returns |
+|---|---|---|
+| `diff_compare` | `old`, `new` or `revision`, `cwd`, `context` (0–20), `maxHunks` (1–200), `format` | The same structured result the CLI prints (`family`, `added`, `removed`, `hunks`, …); `isError` with a reason on failure |
+
+<Callout tone="info" title="A failure never pretends to be 'no differences'.">
+When a file cannot be read, the tool returns `isError: true` and the reason — never an empty
+diff. This is deliberate: treating "could not read it" as "nothing changed" dresses the most
+dangerous failure up as success.
+</Callout>
+
+## IDEs and editors
+
+| Integration point | What it does | Configuration | Status |
+|---|---|---|---|
+| VS Code | From the command palette, hand two selections / two files to this site's view | Extension published | Shipped |
+| Neovim | Colour by the `diff_compare` result, preserving moves and changed lines | Needs a plugin to turn `hunks[].lines[].segments` into extmarks | Planned |
+| JetBrains | External tool + URL parameters | — | Planned |
+
+Columns in the JSON output are **byte offsets** (consistent with tree-sitter and Neovim). VS Code and
+LSP want UTF-16 code units, which you convert per line.
+
+## git and jj
+
+**git difftool** — register diffs as an external tool:
+
+```bash
+git config --global difftool.diffs.cmd 'node apps/cli/lib/bin.js diff --open "$LOCAL" "$REMOTE"'
+git config --global difftool.prompt false
+git config --global diff.tool diffs
+git difftool HEAD~1 --dir-diff
+```
+
+**jj** — planned. The plan is an entry point that can read a unified diff from stdin, then
+`jj config set --user ui.diff-formatter diffs`. jj's current formatter protocol requires the program
+to parse the patch itself, so a reader has to be added first rather than running the kernel directly
+inside jj.
+
+## Office
+
+| File | How to use it | What it can compare | Status |
+|---|---|---|---|
+| `.docx` | Drag into the site | Paragraph order, paragraph moves, per-character within paragraphs | Shipped |
+| `.xlsx` | Drag into the site | Cell insert / delete / modify, formulas, style changes | Shipped |
+| `.pptx` | Drag into the site | Slide order and whole-slide moves, bullet-level text | Shipped |
+| Word / Excel add-in | — | Compare directly inside the document | Planned |
+
+<Callout tone="note" title="Why no 'full-page rendering' for Office.">
+We once used a ~30 MB .NET renderer to render two Word files as a revision page. It did typesetting,
+whereas a review needs **paragraphs and text**: which paragraph changed, which characters changed,
+which paragraph relocated. Word is now read straight from OOXML by the kernel, and that 30 MB is no
+longer loaded into the page.
+</Callout>
+
+## Related
+
+<div class="docs-cards">
+  <Card title="The portable@1 contract" href="/en/reference/portable/" body="The one output shape shared by every family and every integration surface." tag="Reference" />
+  <Card title="Engines and loading strategy" href="/en/reference/engines/" body="Who downloads what, and when — and why the heavy engine is not loaded on first paint." />
+</div>

@@ -1,0 +1,111 @@
+---
+title: 配置总览
+description: 每一个接入点的配置写在这里：文件族、Agent、IDE、git / jj、MCP、Office。状态只有三种——已上线、开发中、规划。
+group: Reference
+order: 2
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+export const Card = (p) => <Doc kind="card" {...p} />;
+
+这一页是官网 `/#/config` 的完整版：同样的条目，加上每一项背后的仓库位置与需要注意的坑。
+
+<Callout kind="callout" tone="rule" title="状态约定。">
+**已上线** = 你现在就能用；**开发中** = 正在写，同一时间只允许一项（目前没有）；**规划** = 说清楚了要做什么，但没有开工。
+这个站不允许出现「已完成但用不了」的条目。
+</Callout>
+
+## 文件族
+
+| 文件族 | 扩展名 | 比对方式 | 视图 | 状态 |
+|---|---|---|---|---|
+| 代码 | `.ts .tsx .mts .js .jsx .mjs .py .rs .go .java .kt .cs .c .h .cpp .hpp .sh .sql .vue .css .html .rb .swift .php .lua .ex .scala .dart` | 行级 + 行内逐字 | 统一 / 并排 / 语法列级 | 已上线 |
+| Markdown | `.md .mdx` | 行级 + 块级 | 统一 / 并排 | 已上线 |
+| 纯文本 | `.txt .csv .tsv .json .yml .yaml .xml .log .ini .toml` | 行级 | 统一 / 并排 | 已上线 |
+| Word | `.docx .docm` | 段落对齐 + 行内逐字 | 双栏段落 | 已上线 |
+| Excel | `.xlsx .xlsm` | 格级 | 网格 + 变更清单 | 已上线 |
+| PowerPoint | `.pptx` | 幻灯片 + 文本段 | 分页清单 | 已上线 |
+| PDF | `.pdf` | 文字层 + 坐标框 | 页面渲染 + 框选 | 已上线 |
+| 老 Office | `.doc .xls .ppt` | — | — | 规划 |
+
+新增扩展名：在 `apps/website/src/lib/formats.ts` 的 `EXT_TO_FAMILY` 里加一行即可，把它归入已有的族。
+新增一族（例如 CAD、字幕、音频对稿）见 [新增一种文件格式](/reference/contributing-a-format/)。
+
+## Agent
+
+| 接入点 | 入口 | 配置 | 状态 |
+|---|---|---|---|
+| DeepSeek Harness | `dsh plugin --profile <名字> add "$PWD/apps/dsh-plugin"` | 装完即有 `diff_compare` 工具与对话内卡片 | 已上线——从仓库装；包没发布到 npm，`add @diffs/dsh-plugin` 会 404 |
+| MCP | `node apps/cli/lib/bin.js mcp` | 见下 | 已上线——从仓库跑；CLI 没发布到 npm，`diffs` 不在 `PATH` |
+| HTTP（本地站） | `diffs local` → `127.0.0.1:5279` | `POST /api/diff` | 已上线 |
+| Node SDK | 仓库内 workspace 引用 | `import { compareFiles } from "<仓库>/packages/diff-tool/src/index.ts"` | 未发布到 npm；上面的路径在 Node 类型剥离下可用 |
+
+**MCP**——`diffs mcp` 起一个 stdio server，说的是标准 JSON-RPC 2.0，任何支持 MCP 的客户端都能直接用。
+它不重新实现任何东西：内部调用的就是 `compareFiles`，和 CLI、本地站、DSH 插件是同一个函数。
+
+```jsonc
+{
+  "mcpServers": {
+    "diffs": { "command": "diffs", "args": ["mcp"] }
+  }
+}
+```
+
+暴露一个工具：
+
+| 工具 | 参数 | 返回 |
+|---|---|---|
+| `diff_compare` | `old`、`new` 或 `revision`、`cwd`、`context`（0–20）、`maxHunks`（1–200）、`format` | 与 CLI 完全相同的结构化结果（`family`、`added`、`removed`、`hunks`……），失败时返回 `isError` 与原因 |
+
+<Callout tone="info" title="失败不会伪装成「没有差异」。">
+文件读不到时，工具返回 `isError: true` 和原因，**不会**返回一个空 diff。
+这条是刻意的：把「读不了」当成「没变化」，是把最危险的失败伪装成成功。
+</Callout>
+
+## IDE 与编辑器
+
+| 接入点 | 干什么 | 配置 | 状态 |
+|---|---|---|---|
+| VS Code | 命令面板把两个选区 / 两个文件交给本站视图 | 扩展已发布 | 已上线 |
+| Neovim | 用 diff_compare 的结果着色，保留移动与改行 | 需要插件把 `hunks[].lines[].segments` 变成 extmark | 规划 |
+| JetBrains | 外部工具 + URL 参数调起 | — | 规划 |
+
+JSON 输出里的列**是字节偏移**（和 tree-sitter、Neovim 一致）。VS Code 与 LSP 需要 UTF-16 code unit，按行换算。
+
+## git 与 jj
+
+**git difftool**——把 diffs 注册成外部工具：
+
+```bash
+git config --global difftool.diffs.cmd 'node apps/cli/lib/bin.js diff --open "$LOCAL" "$REMOTE"'
+git config --global difftool.prompt false
+git config --global diff.tool diffs
+git difftool HEAD~1 --dir-diff
+```
+
+**jj**——规划中。计划是做一个能读 stdin 上 unified diff 的入口，再 `jj config set --user ui.diff-formatter diffs`。
+jj 目前的格式化器协议要求程序自己解析补丁，因此需要先补一个 reader，而不是直接在 jj 里跑内核。
+
+## Office
+
+| 文件 | 怎么用 | 能比到什么 | 状态 |
+|---|---|---|---|
+| `.docx` | 拖进站点 | 段落顺序、段落移动、段内逐字 | 已上线 |
+| `.xlsx` | 拖进站点 | 单元格增删改、公式、样式变化 | 已上线 |
+| `.pptx` | 拖进站点 | 幻灯片顺序与整页移动、要点级文本 | 已上线 |
+| Word / Excel 加载项 | — | 在文档内直接比对 | 规划 |
+
+<Callout tone="note" title="为什么 Office 不做「整页渲染」。">
+之前用过一个 ~30 MB 的 .NET 渲染器来把两份 Word 渲染成修订页。它做的是排版，而复核需要的是**段落与文字**：
+哪一段变了、哪几个字变了、哪一段搬了家。现在 Word 由内核直接读 OOXML，页面里不再加载那 30 MB。
+</Callout>
+
+## 相关
+
+<div class="docs-cards">
+  <Card title="portable@1 契约" href="/reference/portable/" body="所有族、所有接入面共享的唯一输出形状。" tag="参考" />
+  <Card title="引擎与加载策略" href="/reference/engines/" body="谁在什么时候被下载，为什么首屏不加载重引擎。" />
+</div>

@@ -1,0 +1,74 @@
+---
+title: PDF (.pdf)
+description: "Letters of intent and distributor terms: the original page is rendered and each change boxed; a scan has no text layer and says it cannot be compared."
+group: Formats
+order: 5
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+A PDF is not "typeset text": it is **glyphs on a page, with their coordinates**. So comparing PDFs has
+to answer one question first: on these two pages, which lines of text changed, and where are they.
+
+## What it compares
+
+1. Use pdf.js to extract each page's **text layer**: every run of text plus its bounding box on the
+   page;
+2. group the text into **lines** by vertical position (small fragments on the same line are merged);
+3. run the same line-level comparison as for code over the two line sequences (same / delete / insert
+   / edit / move);
+4. map every change back to its **bounding box** and draw it on the rendered page.
+
+Pages with no text layer (scans) are **not compared**: the tool lists exactly which pages, rather
+than returning an empty result that reads as "nothing changed".
+
+## How it decides
+
+- **Lines** are the unit of comparison: even if a single character inside a line changed, only that
+  line is marked;
+- slight pixel differences in line position (the same text shifted up or down by 1pt as a whole) are
+  not a change;
+- content that spans pages is treated as two separate pages, so "a whole paragraph moving to the next
+  page" is not recognised as a move — this is a known limitation today.
+
+## What the result looks like
+
+```jsonc
+{
+  "kind": "pdf",
+  "pages": [
+    { "index": 3, "changed": true,
+      "boxes": [ { "x": 72, "y": 583, "w": 322, "h": 12, "op": "mod" } ] }
+  ]
+}
+```
+
+Coordinates are in PDF user units (1/72 inch), with the origin at the bottom-left corner of the page.
+
+## What it cannot see
+
+| Cannot see | Why |
+|---|---|
+| Subtle font substitutions | The glyph changed but the text did not — not a content change |
+| Differences inside images | That is image comparison |
+| Encrypted / password-protected PDFs | Cannot be parsed; reported explicitly as "password required" |
+| The current values of form fields | Field values are read, but changes to a field's "default value" do not count |
+
+<Callout tone="warn" title="Scans are not supported yet.">
+Only a PDF with a text layer can be compared object by object. A scan (a page that is an image)
+is listed by page number with an explanation — the tool never returns an empty result that looks
+like "no differences". OCR is not implemented; the `tessdata` models in the repository are there
+for later work and are not called.
+</Callout>
+
+## Common questions
+
+**The whole page is boxes?** It means the lines on that page did not align between the two sides (often
+a re-typeset PDF). First check whether a re-export changed the line breaks.
+
+**Comparing a scan against a digital version?** That does not work today: the scan has no text
+layer to compare. Keep a digital-vs-digital comparison alongside it as
+a control.

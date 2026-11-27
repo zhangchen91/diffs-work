@@ -1,0 +1,15 @@
+{
+  "name": "06-mixed",
+  "kind": "excel",
+  "before": "06-mixed.before.xlsx",
+  "after": "06-mixed.after.xlsx",
+  "expect": {
+    "ops": [
+      "add",
+      "del",
+      "mod"
+    ],
+    "notOps": []
+  },
+  "note": "同上：移动部分记为增删改，不单独报移动"
+}

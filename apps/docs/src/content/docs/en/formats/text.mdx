@@ -1,0 +1,69 @@
+---
+title: Markdown, plain text and logs
+description: "READMEs, contract templates, release notes, configs and logs: line-level plus character-level within lines, with headings and table structure kept intact."
+group: Formats
+order: 5
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+Markdown and plain text use the same line-level comparison as code; the only differences are **how
+the "unit" is determined** and **how the text is coloured**.
+
+## Markdown
+
+- **The unit is a heading and its body**: everything from `## Confidentiality` up to the next heading
+  of the same level is one whole;
+- when a heading is relocated, the body under it goes with it — which is how a reader understands
+  "this section moved", rather than "the heading moved and the body was deleted and re-added";
+- tables take part in the comparison row by row, and a change in the number of columns is reported
+  separately;
+- content inside code fences is coloured as **code**, but still compared line by line.
+
+## Plain text
+
+`.txt .csv .tsv .json .yml .yaml .xml .log .ini .toml` are all treated as plain text:
+
+- line-level comparison, character by character within lines;
+- there is **no** concept of a unit, so no "moves" are reported (a whole CSV row moving is detected,
+  but not as "a block of content relocated");
+- JSON / YAML / XML get no syntax-level "key-value alignment" — this is currently **planned**; for
+  now, when a key's value changes you see the line marked.
+
+<Callout tone="note" title="Why no structural comparison for JSON?">
+Structural comparison (which key, at which nesting level, changed) first has to decide "what is the
+identity of an array element", and that has no general answer: sometimes it is `id`, sometimes the
+index, sometimes the whole element. Until there are clear rules, a line-level comparison is the more
+honest answer.
+</Callout>
+
+## Logs
+
+Logs are a special case: **the same log differs between two runs** (timestamps, durations, paths,
+GUIDs). Comparing them directly yields a wall of differences. Current advice:
+
+1. filter out timestamps / durations / random IDs first (this page does not do it automatically,
+   because the filtering rules should be the user's decision);
+2. then compare the two filtered texts.
+
+"Comparing logs by structured fields" is planned.
+
+## Result and views
+
+All three share the text family's `hunks` structure (see [portable@1](/en/reference/portable/)):
+
+- unified view: line-level plus character-level within lines;
+- side-by-side view: left and right aligned, changes shown in pairs;
+- export as `.diff`: standard unified diff, ready for `patch`.
+
+## Common questions
+
+**Mixed line endings?** `CRLF` and `LF` are normalised to `\n` before comparing, so "only the line
+endings differ" produces no differences.
+
+**Encoding?** UTF-8 (with or without BOM) is read directly; UTF-16 / UTF-32 with a BOM is converted to
+UTF-8 before comparing; other encodings (GBK and the like) are not guaranteed to work — you will see
+unreadable characters, and the view warns you.

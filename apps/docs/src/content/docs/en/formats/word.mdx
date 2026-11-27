@@ -1,0 +1,88 @@
+---
+title: Word (.docx)
+description: "Between two contracts, one number changed, one clause moved, one phrase reworded — aligned by paragraph, marked by character, and told which paragraph relocated."
+group: Formats
+order: 2
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+Word is the type most likely to go wrong in a review: **one number changed, one "not" deleted, one
+clause moved** is almost invisible in the layout. So the Word view does not aim to "look as good as
+Word" — it answers three questions only: which paragraph changed, which characters inside that
+paragraph changed, and which paragraph relocated.
+
+## What it compares
+
+It reads only the part of the OOXML that actually carries content:
+
+- the paragraphs (`w:p`) and text (`w:t`) in `word/document.xml`;
+- tables are expanded row by row into paragraphs and take part in the same alignment;
+- a "paragraph number" in the result is the **sequential number of the paragraph in the document**
+  (starting from 1), not the order in which `w:p` appears in the XML.
+
+Not read: fonts, margins, theme, image binaries, header/footer layout. Those differences are
+ignored — during a review they are almost always noise.
+
+## How it decides
+
+<Doc kind="step" n="1" title="Paragraph alignment" />
+
+The paragraphs on each side form their own sequence; first **identical** ones are paired (LCS), then
+each unmatched run is judged for "the same paragraph rewritten": if the two paragraphs share a long
+enough common prefix and suffix it is an **edit**, otherwise it is one **deletion + one insertion**.
+
+<Doc kind="step" n="2" title="Character by character within a paragraph" />
+
+For a paired "edit" paragraph, the changed positions likewise come from their common prefix and
+suffix; each side marks the characters it lost / gained.
+
+<Doc kind="step" n="3" title="Paragraph relocation" />
+
+The same text disappears from its old place and reappears elsewhere unchanged → a **move**, stating
+"moved from paragraph N / moved to paragraph M". Comment and blank paragraphs take no part in move
+detection.
+
+## What the result looks like
+
+```jsonc
+{
+  "kind": "docx",
+  "revisions": [
+    { "kind": "update", "paragraph": 12, "old": "…delivery period is 30 days…", "new": "…delivery period is 45 days…",
+      "segments": [ { "op": "same", "text": "…delivery period is " }, { "op": "ins", "text": "4" }, { "op": "same", "text": "5 days…" } ] },
+    { "kind": "move", "from": 5, "to": 9, "text": "Dispute resolution:" }
+  ]
+}
+```
+
+## What it cannot see
+
+| Cannot see | Why |
+|---|---|
+| Font / size / colour changes | A review cares about content, not typography |
+| "Page x of y" changes in headers and footers | Field codes change every time the file is opened — noise |
+| Pixel-level differences in images | That is image comparison, a different job |
+| The author and time of tracked changes | We compare two files, not Word's revision history |
+
+<Callout tone="note" title="So should I still use Word files with 'track changes' on?">
+No. Hand it two **clean versions** (each with all revisions accepted) and the result is more stable
+than Word's own revision view: Word's tracked changes depend on the editing process, and when the
+two files each carry their own revision history they cannot be aligned at all.
+</Callout>
+
+## Common questions
+
+**The paragraph counts do not match?** Blank paragraphs are ignored; paragraphs containing only field
+codes are ignored too, so the numbering may differ from what you see in Word.
+
+**The whole document shows up as "delete + add"?** Most likely the line endings or the full-width /
+half-width characters differ between the two exports (for example, something was copied from a PDF
+or a web page); if the text itself differs, every paragraph is judged "delete + add". Normalise both
+sides to the same source before comparing.
+
+**Changes inside tables?** Tables are expanded row by row, and the change lands on the paragraph of a
+specific cell; the view shows which row of the enclosing table it is.

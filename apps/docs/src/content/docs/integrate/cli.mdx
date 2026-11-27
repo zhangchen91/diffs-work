@@ -1,0 +1,89 @@
+---
+title: CLI 与本地站
+description: 一个 diffs 命令管住三件事：终端里比、本地站里看、给 Agent 和扩展一个稳定的 HTTP 接口。
+group: Integrate
+order: 5
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+## 命令
+
+| 命令 | 做什么 |
+|---|---|
+| `diffs diff <old> <new>` | 在终端里对两份文件 |
+| `diffs diff <old> <new> --unified` | 输出标准 unified diff（可交给 `patch`） |
+| `diffs diff <old> <new> --json` | 输出完整 JSON（见 [portable@1](/reference/portable/)） |
+| `diffs diff <file> --revision HEAD~1` | 工作区当前文件 vs 某个提交 |
+| `diffs diff <old> <new> --context 5` | 每处改动保留几行上下文（0–20，默认 3） |
+| `diffs diff <old> <new> --maxHunks 5` | 最多返回几处改动（1–200，默认 40） |
+| `diffs diff --open <old> <new>` | 在本地站里打开结果 |
+| `diffs local [--port 5279] [--no-open]` | 启动本地站（默认） |
+| `diffs inbox [--open]` | 启动并直接切到 Inbox：Agent / 扩展投递的对比集中在这里 |
+| `diffs paths` | 打印数据目录（`~/.diffs`） |
+| `diffs version` | 版本号 |
+
+<Callout tone="warn" title="CLI 还没发布到 npm。">
+npm 上的 `diffs` 是**另一个人的无关包**，`npx diffs` 装到的不是这个工具。
+在发布之前，命令都是相对仓库来说的：
+
+```bash
+pnpm build:cli
+node apps/cli/lib/bin.js <command>
+```
+
+下面的表格里写作 `diffs <command>`，在实际使用中换成上面这行即可。
+</Callout>
+
+## 本地站
+
+`diffs local` 只在 `127.0.0.1:5279` 上监听，不对外暴露。它提供：
+
+| 接口 | 方法 | 做什么 |
+|---|---|---|
+| `/api/health` | GET | 存活与版本 |
+| `/api/diff` | POST | 比对两份内容（文件路径或直接内容） |
+| `/api/open` | POST | 用本地站打开一次已有的比对结果 |
+| `/api/inbox` | GET / POST | 列出 / 投递一条待处理对比 |
+| `/api/file` | GET | 读一个本地文件（供视图显示原文） |
+| `/api/pair` | POST / GET | 暂存一对内容，供浏览器扩展取回（`#/compare?pair=<id>`） |
+
+```bash
+curl -s http://127.0.0.1:5279/api/health
+```
+
+### 投递一条对比到 Inbox
+
+```bash
+curl -s http://127.0.0.1:5279/api/inbox \
+  -H 'content-type: application/json' \
+  -d '{
+    "title": "合同 v3 → v4",
+    "old": { "label": "v3", "path": "/tmp/contract-v3.docx" },
+    "new": { "label": "v4", "path": "/tmp/contract-v4.docx" },
+    "source": "ci"
+  }'
+```
+
+<Callout tone="note" title="Inbox 是给人看的队列。">
+Agent 每次调用 `diff_compare` 都会顺手投递一条；你在本地站里点开就能看到那一对文件的并排视图，
+不需要回头翻聊天记录。
+</Callout>
+
+## 数据在哪
+
+`diffs paths` 会打印 `~/.diffs`。里面只有 Inbox 索引与你投递过的比对，没有缓存的文件正文。
+
+## 退出码
+
+| 码 | 含义 |
+|---|---|
+| `0` | 成功（**不论两份内容是否相同**） |
+| `1` | 参数错误 / 文件不存在 / 无法解析 |
+| `2` | 内部错误 |
+
+刻意不把「有差异」当成非零退出码：脚本里 `set -e` 会因为「正常地发现了差异」而中断，
+而这几乎总是误伤。需要的话自己判 `summary`。

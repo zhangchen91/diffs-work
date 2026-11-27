@@ -1,0 +1,56 @@
+---
+/**
+ * Components docs pages can drop in: shell header, cards, callouts and step markers.
+ *
+ * One component with a `kind` prop, because MDX only needs the one import and every variant
+ * renders to the same two lines of markup.
+ */
+export interface Props {
+  kind?: "shell" | "cards" | "card" | "callout" | "step";
+  title?: string;
+  desc?: string;
+  href?: string;
+  body?: string;
+  tag?: string;
+  tone?: "note" | "warn" | "rule";
+  n?: string;
+}
+const { kind = "callout", title = "", desc = "", href, body = "", tag, tone = "note", n } = Astro.props;
+---
+{kind === "shell" && (
+  <header class="docs-shell">
+    <h1>{title}</h1>
+    {desc ? <p class="docs-lede">{desc}</p> : null}
+  </header>
+)}
+
+{kind === "cards" && <div class="docs-cards"><slot /></div>}
+
+{kind === "card" && (
+  href ? (
+    <a class="docs-card" href={href}>
+      <div class="docs-card-head"><span class="docs-card-title">{title}</span>{tag ? <span class="docs-tag">{tag}</span> : null}</div>
+      {body ? <p>{body}</p> : null}
+      <span class="docs-card-arrow">→</span>
+    </a>
+  ) : (
+    <div class="docs-card">
+      <div class="docs-card-head"><span class="docs-card-title">{title}</span>{tag ? <span class="docs-tag">{tag}</span> : null}</div>
+      {body ? <p>{body}</p> : null}
+    </div>
+  )
+)}
+
+{kind === "callout" && (
+  <div class:list={["docs-callout", `docs-callout-${tone}`]}>
+    {title ? <div class="docs-callout-title">{title}</div> : null}
+    <slot />
+  </div>
+)}
+
+{kind === "step" && (
+  <div class="docs-step">
+    <span class="docs-step-n">{n}</span>
+    <span class="docs-step-t">{title}</span>
+  </div>
+)}

@@ -1,0 +1,13 @@
+{
+  "name": "03-mod",
+  "kind": "word",
+  "before": "03-mod.before.docx",
+  "after": "03-mod.after.docx",
+  "expect": {
+    "ops": [
+      "del",
+      "add"
+    ],
+    "notOps": []
+  }
+}

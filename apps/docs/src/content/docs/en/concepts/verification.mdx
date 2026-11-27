@@ -1,0 +1,167 @@
+---
+title: What "verifiable" means
+description: Why, now that agents make changes, confirming a change has to rest on a diff anyone can recompute — and how that defines what this product will and will not claim.
+group: Concepts
+order: 1
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+export const Card = (p) => <Doc kind="card" {...p} />;
+
+> **In one line**: a diff proves *what changed*, not that the change is right. Making the first
+> of those something anyone can recompute is where verification starts.
+
+## Why verification needs rethinking now
+
+Writing code, editing a contract and changing a deck went, in about a year, from "labour cost" to
+"marginal cost near zero". When producing output gets cheap, the scarce step stops being the
+output and becomes **confirming that the output is the one you asked for**.
+
+We used to rely on three assumptions. None of them holds any more:
+
+| The old assumption | Why it fails now |
+|---|---|
+| A person made the change, and remembers what they wrote | An agent made it; what it remembers is its own reading, not the bytes |
+| "Just look at the diff" is enough | There are more diffs, and they are longer; reading row by row is no longer possible |
+| Author and reviewer share one tool | The author is a model and the reviewer is a person, with a retelling between them |
+
+So verification is no longer the last step of a process. It is **the door every delivery goes
+through**.
+
+## Verify the two files, not the agent
+
+The usual mistake is to verify what the agent says: have it self-check, have it restate the diff,
+have it explain why it changed something. That cannot work, for a plain reason: **the same
+generation produced both the change and the description of the change**, so both share one blind
+spot.
+
+We hold that there are only ever two things worth verifying:
+
+1. the file **before** the change (or git's base revision), and
+2. the file **after** it (or git's head revision).
+
+A diff is a deterministic function of those two. Once that holds, verification is decoupled both
+from who made the change and from what tool made it.
+
+<Callout tone="rule" title="Rule 1 · The deliverable contains the diff itself, not a summary of it.">
+"Three changes were made" is not evidence. "On line 12 the `return` statement gained
+`script, expanded`; lines 5 and 9 likewise" is. If the deliverable carries no diff a third party
+can recompute, the delivery is, by default, unverified.
+</Callout>
+
+## Four conditions for "verifiable"
+
+We break the word into four conditions you can test one by one. If any of them fails, verification
+degrades into trust.
+
+### 1. Determinism
+
+The same two files must produce the same answer today and tomorrow, on another machine and through
+another implementation. That rules out randomness, wall-clock time, filesystem order and locale —
+and it requires that the tool **can explain why it decided what it decided**.
+
+Our answer is one kernel (Rust compiled to WebAssembly), one algorithm path, and one output shape
+([portable@1](/en/reference/portable/)). The TypeScript reference implementation and the kernel are
+cross-checked, and any disagreement between them is a failing test.
+
+### 2. Independently recomputable
+
+A reviewer must be able to run the same comparison **somewhere the author does not control**:
+
+- in a web page (nothing installed, nothing uploaded);
+- on the command line (`diffs diff a b`);
+- through a local API (`POST /api/diff`, bound to `127.0.0.1`);
+- inside an agent, over the same contract rather than a paragraph the agent wrote itself.
+
+All four produce the same JSON.
+
+### 3. Fine enough granularity
+
+"12 lines removed, 40 added" carries almost no information. To catch something smuggled in, the
+granularity has to reach:
+
+- **which row** changed (not "rows 3 to 9 changed");
+- **which characters inside it** (`buf` → `buffer`, not a whole red line);
+- **which block moved** (a move is not a delete plus an add — that is where things hide);
+- for Office files, **which paragraph, cell or page**;
+- for code, **which function, argument or import**.
+
+### 4. No extra exposure in order to verify
+
+Legal contracts, diligence drafts and unreleased code are exactly the material that most needs an
+independent check and least can be handed to a third party. Computed locally — in the browser, or
+on your own machine — verification stops being a trade-off against confidentiality.
+
+## What a diff can and cannot settle
+
+A diff answers *what changed*. It does not answer *whether that was the right change*.
+
+| Question | Who answers it |
+|---|---|
+| What changed? | **The diff** (deterministic, recomputable) |
+| Is that the set of changes I asked for? | A person, reading the diff against the requirement |
+| Is the change correct? | Tests, domain judgement, code review |
+| Who produced it, and when was it computed? | Version control / signing (planned) |
+
+The first row is what makes the other three discussable. Hand that row to an agent's own account
+of itself and everything above it is built on sand.
+
+## A verification routine you can copy
+
+<Callout tone="note" title="This is what we do ourselves." />
+
+<Doc kind="step" n="1" title="Ask for the artefact, not the description" />
+
+Have the agent hand over the before/after files, or a commit, rather than a paragraph about them.
+Files are evidence; paragraphs are retellings.
+
+<Doc kind="step" n="2" title="Recompute somewhere third-party" />
+
+Recompute with a tool that **does not belong to the agent** — this site, the CLI, CI — and check
+that what was added, removed, changed and moved matches what it claimed.
+
+> Below, `diffs <command>` means the CLI. It is **not on npm yet**, so run `pnpm build:cli` first
+> and replace `diffs` with `node apps/cli/lib/bin.js`.
+
+```bash
+diffs diff before.ts after.ts --json | jq '.counts'
+```
+
+<Doc kind="step" n="3" title="Look at the shape before the content" />
+
+Start with the distribution of changes: which functions, whether anything moved wholesale, whether
+a dependency or import appeared. **A move is where things hide** — a function relocated to another
+file with one argument quietly changed is the classic case.
+
+<Doc kind="step" n="4" title="Confirm each change word by word" />
+
+For each edit, read the characters that changed, not the whole row. Re-indentation and line
+endings must not interrupt reading.
+
+<Doc kind="step" n="5" title="Put the step into the agent's instructions" />
+
+State in the agent's system prompt: **a diff result must accompany every delivery**, and a summary
+may not replace it.
+
+<Doc kind="step" n="6" title="Put the step into the team's routine" />
+
+Before merging, a second person checks in an independent tool. The value is less that it catches
+mistakes than that "unchecked" becomes visible.
+
+## Why we open-sourced this
+
+If the verification tool itself cannot be inspected, "independent review" only means trusting
+somebody else instead. So the contract, the SDK, the site, the extension and the plugin are all
+open source; only the kernel ships as a binary, with its interface fully public.
+
+You can write your own kernel. As long as it emits portable@1, this site can render it, an agent
+can consume it, and CI can compare against it. Every link in the chain can be replaced — that is
+the final meaning of "verifiable".
+
+<div class="docs-cards">
+  <Card title="The tool contract" href="/en/reference/tool-contract/" body="The one contract every integration shares: the request, the response, the field semantics." tag="Must read" />
+  <Card title="Instructions to hand an agent" href="/en/integrate/agents/" body="Give this page to your agent: tool definitions, calling rules, and the rules it must not break." />
+</div>

@@ -1,0 +1,125 @@
+---
+title: Adding a file format
+description: Implement one wasm against the diff protocol and the site, the Harness plugin and the extension all support it at once.
+group: Reference
+order: 4
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+Implement one wasm against the [diff protocol](/en/reference/portable/) and the site, the
+DeepSeek Harness plugin and the Chrome extension support it simultaneously. None of those callers
+has to change: they only know the protocol.
+
+## 1. Write the smallest possible wasm
+
+Any language that compiles to `wasm32-unknown-unknown` will do. The signature is fixed:
+
+```
+diffs_alloc(len: usize) -> *mut u8      // allocate the input buffer
+diffs_handle(ptr: *mut u8, len: usize) -> *mut u8   // process, return a pointer to the result
+diffs_box_len(ptr: *mut u8) -> usize    // length of the result (first 4 bytes hold the length)
+diffs_free(ptr: *mut u8, total: usize)
+```
+
+Input is UTF-8 JSON, and so is the output:
+
+```json
+{
+  "cmd": "diff",
+  "a": "<base64 of the old file>",
+  "b": "<base64 of the new file>"
+}
+```
+
+<Callout tone="note" title="Why base64 and not a shared buffer.">
+A file format may be binary (a zip, a PDF, a picture). JSON keeps the protocol identical for text
+and binary, and the 4-byte length prefix means the caller never has to know the size ahead of time.
+</Callout>
+
+## 2. Register it
+
+Add the extension to `EXT_TO_FAMILY` in `apps/website/src/lib/formats.ts`, and one entry to
+`FORMATS`:
+
+```ts
+{
+  id: "yourformat",
+  label: "format.yourformat.label",
+  exts: [".xyz"],
+  blurb: "format.yourformat.blurb",
+  engine: "your-format.wasm",
+  engineSize: "—",
+  live: false,
+  accent: "#7dd3fc",
+}
+```
+
+Then add the three strings to both `packages/i18n/src/messages/zh-CN.ts` and `en.ts`. The site
+will not render a key that has no translation, so a missing string shows as the key itself — a
+test checks for exactly that.
+
+## 3. Prepare a set of cases
+
+Under `test-cases/yourformat/`, each pair `*.before.*` / `*.after.*` gets a `*.case.json`:
+
+```json
+{
+  "name": "01-add",
+  "kind": "yourformat",
+  "before": "01-add.before.xyz",
+  "after": "01-add.after.xyz",
+  "expect": { "ops": ["add"], "notOps": ["move"] }
+}
+```
+
+Six or so per format: one for each kind of change on its own, and a few with several at once.
+`--only` matches the *directory* name under `test-cases/` (so a format living in
+`test-cases/yourformat/` is `--only yourformat`). Run them with:
+
+```bash
+node scripts/run-cases.mjs --only yourformat
+```
+
+`expect.ops` lists the operations that *must* be found. Anything the format genuinely cannot
+distinguish (a move, for instance) goes in `notOps` — being explicit about the limit is part of
+the contract.
+
+## 4. Render it
+
+The view layer knows nothing about your format, only the contract. A renderer takes the portable@1
+object and draws it: lines, cells, pages or a revision list. Until one exists, the family can still
+ship and be compared through the JSON.
+
+## What to return
+
+A [portable@1](/en/reference/portable/) object. The minimum is:
+
+```jsonc
+{
+  "schema": "diffs.work/portable@1",
+  "kind": "myformat",
+  "engine": "my-kernel.wasm",
+  "summary": { "added": 0, "removed": 0, "changed": 2, "ratio": 0.1 },
+  "warnings": []
+}
+```
+
+Plus whichever of `hunks`, `revisions`, `sheets`, `slides`, `pages` or `moves` your family needs.
+
+## Checklist before you call it done
+
+- [ ] The same two files always produce byte-identical output;
+- [ ] Numbers are 1-based, columns are UTF-8 byte offsets;
+- [ ] `warnings` is populated rather than the call silently degrading;
+- [ ] A file it cannot read returns an error object, not an empty result that looks like "no
+      differences";
+- [ ] Large inputs do not exhaust the wasm heap.
+
+<Callout tone="warn" title="The one failure that matters most.">
+Returning "no differences" for a file you could not parse is worse than returning an error: a
+reviewer will believe it. If you cannot read the format, say so in `warnings` and return an error.
+</Callout>

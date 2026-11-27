@@ -1,0 +1,12 @@
+{
+  "name": "01-add",
+  "kind": "word",
+  "before": "01-add.before.docx",
+  "after": "01-add.after.docx",
+  "expect": {
+    "ops": [
+      "add"
+    ],
+    "notOps": []
+  }
+}

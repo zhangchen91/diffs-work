@@ -1,0 +1,59 @@
+---
+title: Install and run locally
+description: Clone, build, start the local viewer — three steps.
+group: Start
+order: 2
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+## Requirements
+
+- Node.js 22 or newer
+- pnpm 10 or newer
+
+## Clone and install
+
+```bash
+git clone <repo> diffs.work && cd diffs.work
+pnpm install
+```
+
+## Start the local viewer (fastest path)
+
+```bash
+pnpm local          # build the local viewer and start the API
+# → http://127.0.0.1:5279
+```
+
+Or with the CLI:
+
+```bash
+pnpm build:cli
+node apps/cli/lib/bin.js local            # open the local preview
+node apps/cli/lib/bin.js inbox            # go straight to the inbox
+node apps/cli/lib/bin.js mcp              # run as an MCP server (stdio)
+node apps/cli/lib/bin.js diff a.md b.md   # compare two files in the terminal
+
+<Callout tone="warn" title="The CLI is not on npm yet.">
+Do **not** use `npx diffs`: the `diffs` package on npm belongs to someone else and is an
+unrelated tool. Until this is published, either build from this repository as above, or use the
+website in your browser.
+</Callout>
+```
+
+## The sites
+
+| Site | Command | Port |
+|---|---|---|
+| Website | `pnpm dev:website` | 5180 |
+| Docs | `pnpm dev:docs` | 5183 |
+| Local | `pnpm dev:local` | 5182 (`/api` proxies to 5279) |
+
+## Where data lives
+
+Everything is under `~/.diffs/`: `diffs/<id>.json` (inbox records, paths only) and `pairs/` (files waiting to be rendered).
+`diffs paths` prints the directory.

@@ -1,0 +1,16 @@
+{
+  "name": "@diffs/core-code-ast",
+  "version": "0.3.0",
+  "description": "Code diff with a tokenizer: comments / strings / numbers, symbol-level summary, noise labels.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@diffs/diff-core": "workspace:*"
+  },
+  "sideEffects": false,
+  "license": "MIT"
+}

@@ -1,0 +1,39 @@
+# Cloudflare Pages *merges* every matching rule; it does not override. A `/*` rule that sets
+# `cache-control` is therefore appended to every more specific rule, which produced
+#   cache-control: public, max-age=0, must-revalidate, no-transform, public, max-age=31536000, immutable
+# on hashed assets — two contradictory max-ages in one value, with the order not something a
+# cache has to honour in our favour. So `/*` carries no cache-control at all, and each path that
+# needs one says so.
+/*
+  vary: accept-encoding
+  # Cloudflare's brotli output for this document is corrupt: a request offering `br`
+  # receives a 701-byte stream that no client can decode (gzip and deflate are fine), which
+  # is a blank page on iOS Safari. Asking for identity keeps the document bit-exact.
+  content-encoding: identity
+
+/*.html
+  cache-control: public, max-age=0, must-revalidate, no-transform
+
+/index.html
+  cache-control: public, max-age=0, must-revalidate, no-transform
+
+/assets/*
+  cache-control: public, max-age=31536000, immutable
+
+/sw.js
+  # The worker itself must always be revalidated: a cached copy keeps serving the old cache
+  # strategy and the site can never be updated.
+  cache-control: public, max-age=0, must-revalidate
+
+/engine/rules-core/*
+  # The kernel binary is fetched by name and must reflect a deploy: not immutable.
+  cache-control: public, max-age=0, must-revalidate
+
+/engine/pdfjs/*
+  cache-control: public, max-age=604800
+
+/engine/tessdata/*
+  cache-control: public, max-age=604800
+
+/examples/*
+  cache-control: public, max-age=3600

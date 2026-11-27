@@ -1,0 +1,14 @@
+{
+  "name": "07-all-marks",
+  "kind": "pdf",
+  "before": "07-all-marks.before.pdf",
+  "after": "07-all-marks.after.pdf",
+  "expect": {
+    "ops": [
+      "add",
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "改两处金额、删交割条款、增陈述保证；PDF 在浏览器端比对"
+}

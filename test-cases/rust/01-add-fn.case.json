@@ -1,0 +1,15 @@
+{
+  "name": "01-add-fn",
+  "kind": "rust",
+  "before": "01-add-fn.rs",
+  "after": "01-add-fn.after.rs",
+  "expect": {
+    "ops": [
+      "add"
+    ],
+    "notOps": [
+      "del",
+      "move"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "07-all-marks",
+  "kind": "ppt",
+  "before": "07-all-marks.before.pptx",
+  "after": "07-all-marks.after.pptx",
+  "expect": {
+    "ops": [
+      "add",
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "改金额、增整页、页序互换；PPT 按文本比对，页序变化以增删表示，不单独报移动"
+}

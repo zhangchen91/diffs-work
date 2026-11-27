@@ -1,0 +1,16 @@
+{
+  "name": "@diffs/core-text",
+  "version": "0.1.0",
+  "description": "Text-family diff driver (md / txt / csv / tsv / json / xml / yaml) — line + word level.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@diffs/diff-core": "workspace:*"
+  },
+  "sideEffects": false,
+  "license": "MIT"
+}

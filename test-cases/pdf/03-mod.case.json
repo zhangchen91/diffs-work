@@ -1,0 +1,14 @@
+{
+  "name": "03-mod",
+  "kind": "pdf",
+  "before": "03-mod.before.pdf",
+  "after": "03-mod.after.pdf",
+  "expect": {
+    "ops": [
+      "del",
+      "add"
+    ],
+    "notOps": []
+  },
+  "note": "PDF 在浏览器端比对（pdf.js），不在 wasm 里"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "05-move-and-edit",
+  "kind": "rust",
+  "before": "05-move-and-edit.rs",
+  "after": "05-move-and-edit.after.rs",
+  "expect": {
+    "ops": [
+      "move",
+      "mod"
+    ],
+    "notOps": []
+  }
+}

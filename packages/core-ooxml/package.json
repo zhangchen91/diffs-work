@@ -1,0 +1,13 @@
+{
+  "name": "@diffs/core-ooxml",
+  "version": "0.3.0",
+  "description": "Read and compare OOXML packages (docx / pptx) in plain TypeScript — no wasm, so an agent tool and a server can both do it.",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@diffs/core-xlsx": "workspace:*"
+  }
+}

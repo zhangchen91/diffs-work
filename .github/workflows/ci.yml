@@ -1,0 +1,67 @@
+name: CI
+
+# Runs the exact commands a contributor runs locally. Two jobs on purpose:
+#   unit     — no browser, no engine binaries needed (the code paths degrade cleanly)
+#   browser  — ego-browser drives the built site: tabs, sample switching, on-demand loading
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # version comes from package.json "packageManager" — do not pin it twice
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The Rust kernels are built from a private crate; CI exercises the fallback
+      # path first. `build:rules` is skipped when apps/engine-core is absent.
+      # The compiled kernel is tracked in the repo (only its Rust source is private),
+      # so every contributor and CI run exercises the real engines.
+      - name: Check the shipped kernel
+        run: |
+          test -f apps/website/public/engine/rules-core/diffs-engine.wasm
+          test -f apps/website/public/engine/pdfjs/pdf.mjs
+      - name: Assemble engine files
+        run: pnpm sync:engine
+      - run: pnpm test
+      - run: pnpm build
+
+  browser:
+    # Playwright's Chromium is not published for ubuntu-26.04 yet; pin 24.04.
+    runs-on: ubuntu-24.04
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      # version comes from package.json "packageManager" — do not pin it twice
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Assemble engine files
+        run: pnpm sync:engine
+      - run: pnpm build
+      # The maintainers drive the UI with ego-browser, which is not on npm.
+      # CI drives the same assertions through Playwright instead.
+      # Playwright is installed here, not in package.json, so the repo stays lean:
+      # local development keeps using the packaged ego-browser.
+      - name: Install the browser driver
+        run: |
+          npm i -g playwright@1.56.1
+          npx --yes playwright@1.56.1 install --with-deps chromium || npx --yes playwright@1.56.1 install chromium
+      - name: UI regression (tabs, samples, themes, AST, on-demand)
+        env:
+          NODE_PATH: "$(npm root -g)"
+        run: pnpm test:ui:playwright

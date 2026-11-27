@@ -1,0 +1,107 @@
+---
+title: portable@1 — 输出契约
+description: 每一种文件、每一个接入面都输出这一个形状。字段、单位、稳定性承诺，以及写给要自己实现一遍的人。
+group: Reference
+order: 3
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+<Callout tone="rule" title="稳定性承诺。">
+`schema: "diffs.work/portable@1"` 一旦发出，**字段只增不减，语义不变**。要改语义就出 `portable@2`。
+依赖这份输出的脚本不会因为一次升级而悄悄改变行为。
+</Callout>
+
+## 顶层
+
+```jsonc
+{
+  "schema": "diffs.work/portable@1",
+  "kind": "code",            // text | code | markdown | docx | xlsx | pptx | pdf
+  "engine": "rules-core.wasm",
+  "counts":  { "added": 3, "removed": 1, "changed": 2, "ratio": 0.14 },
+  "summary": "4 hunk(s) · +3/-1 · 2 update(s)",   // 给人看的一行字
+  "hunks": [ … ],            // text / code / markdown
+  "revisions": [ … ],        // docx
+  "sheets": [ … ],           // xlsx
+  "slides": [ … ],           // pptx
+  "pages": [ … ],            // pdf
+  "moves": [ … ],            // 任意族：整块移动
+  "warnings": []             // 降级、截断、无法解析的原因
+}
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `schema` | 常量 | 永远是 `diffs.work/portable@1` |
+| `kind` | 枚举 | 用哪种视图渲染；由输入文件族决定 |
+| `engine` | string | 实际产出这份结果的内核标识（便于对拍与排错） |
+| `counts.added` / `.removed` | int | 行数（Office 族是段落 / 单元格 / 幻灯片数） |
+| `counts.changed` | int | 被判为「改」而不是「增 + 删」的数量 |
+| `counts.ratio` | float 0..1 | 变化占比，仅用于排序与概览，**不参与任何判定** |
+| `summary` | string | 给人看的一行摘要（终端里打印的就是它） |
+| `warnings` | string[] | 非致命的说明；**非空时一定要展示给用户** |
+
+## hunks（文本 / 代码 / Markdown）
+
+```jsonc
+{
+  "operation": "update",          // insert | delete | update | move
+  "beforeStart": 5, "beforeEnd": 5,
+  "afterStart": 5, "afterEnd": 5,
+  "lines": [
+    { "kind": "upd-del", "oldNo": 5, "newNo": null, "text": "…", "segments": [ … ] },
+    { "kind": "upd-ins", "oldNo": null, "newNo": 5, "text": "…", "segments": [ … ] },
+    { "kind": "ctx",     "oldNo": 6, "newNo": 6, "text": "…", "segments": null }
+  ]
+}
+```
+
+`lines[].kind` 只有五种：
+
+| kind | 含义 |
+|---|---|
+| `ctx` | 未变化，作为上下文出现 |
+| `del` / `ins` | 整行删除 / 整行新增 |
+| `upd-del` / `upd-ins` | **同一条改动的两半**：旧行与新行。它们总是成对、紧邻，顺序固定 |
+
+`segments` 是行内标记，按出现顺序拼接正好等于 `text`：
+
+| `op` | 含义 |
+|---|---|
+| `same` | 这一行里没变的字 |
+| `del` | 旧行里被删掉的字 |
+| `ins` | 新行里被加上的字 |
+
+<Callout tone="note" title="为什么「改」要拆成两行而不是一个 old/new 对象。">
+一边渲染并排、一边渲染统一视图时，拆成两行可以让同一个顺序直接喂给两种布局；
+同时 `upd-del` 行只包含「删掉了什么」，`upd-ins` 行只包含「加上了什么」，各自的标记不会互相污染。
+</Callout>
+
+## moves
+
+```jsonc
+{ "fromStart": 4, "fromEnd": 8, "toStart": 6, "toEnd": 10, "text": "…" }
+```
+
+一行上同时出现 `del` 与 `ins` 时，读者很容易把「搬家」误读成「删了又加」——那是最容易藏事情的一种读法。
+因此整块移动会被单独标出来：同一份内容换了位置，**不算删除也不算新增**。
+
+## 单位
+
+- 所有行号、段落号、幻灯片号、页码都是 **1 开始**；
+- 代码里的列是 **UTF-8 字节偏移**（与 tree-sitter / Neovim 一致）；VS Code 与 LSP 需要 UTF-16，按行换算即可；
+- Office 族的「行」是段落 / 单元格 / 幻灯片，不是文本行。
+
+## 自己实现一个内核
+
+只要满足三件事，你的实现就能和本站、插件、CLI 互通：
+
+1. 输入是两个文件的内容（或路径）与一个 `kind`；
+2. 输出是一个 `portable@1` 对象，字段语义如上；
+3. 同样的输入永远产出同样的输出（不依赖时间、随机数、locale、文件系统顺序）。
+
+本站的渲染层不认识任何具体内核，只认这个形状；插件与 CLI 也是。

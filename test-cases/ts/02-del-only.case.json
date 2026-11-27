@@ -1,0 +1,14 @@
+{
+  "name": "02-del-only",
+  "kind": "ts",
+  "before": "02-del-only.ts",
+  "after": "02-del-only.after.ts",
+  "expect": {
+    "ops": [
+      "del"
+    ],
+    "notOps": [
+      "add"
+    ]
+  }
+}

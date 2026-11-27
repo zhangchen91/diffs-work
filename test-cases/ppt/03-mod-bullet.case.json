@@ -1,0 +1,13 @@
+{
+  "name": "03-mod-bullet",
+  "kind": "ppt",
+  "before": "03-mod-bullet.before.pptx",
+  "after": "03-mod-bullet.after.pptx",
+  "expect": {
+    "ops": [
+      "del",
+      "add"
+    ],
+    "notOps": []
+  }
+}

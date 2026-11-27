@@ -1,0 +1,14 @@
+{
+  "name": "05-move-row",
+  "kind": "excel",
+  "before": "05-move-row.before.xlsx",
+  "after": "05-move-row.after.xlsx",
+  "expect": {
+    "ops": [],
+    "notOps": [
+      "add",
+      "del"
+    ]
+  },
+  "note": "两行互换位置，按地址比对时每个格子的坐标都没变，因此没有可见变更；Excel 不做行移动检测"
+}

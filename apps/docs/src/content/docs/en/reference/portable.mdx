@@ -1,0 +1,115 @@
+---
+title: portable@1 — the output contract
+description: "Every file type and every integration emits this one shape: the fields, the units, the stability promise, and what it takes to write your own kernel."
+group: Reference
+order: 3
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+<Callout tone="rule" title="The stability promise.">
+Once `schema: "diffs.work/portable@1"` is emitted, **fields are only added, never removed, and
+never change meaning**. A change of meaning means `portable@2`. No script that reads this output
+will silently start behaving differently after an upgrade.
+</Callout>
+
+## Top level
+
+```jsonc
+{
+  "schema": "diffs.work/portable@1",
+  "kind": "code",            // text | code | markdown | docx | xlsx | pptx | pdf
+  "engine": "rules-core.wasm",
+  "counts":  { "added": 3, "removed": 1, "changed": 2, "ratio": 0.14 },
+  "summary": "4 hunk(s) · +3/-1 · 2 update(s)",   // a sentence for a human
+  "hunks": [ … ],            // text / code / markdown
+  "revisions": [ … ],        // docx
+  "sheets": [ … ],           // xlsx
+  "slides": [ … ],           // pptx
+  "pages": [ … ],            // pdf
+  "moves": [ … ],            // any family: whole blocks that relocated
+  "warnings": []             // degradations, truncation, reasons a file could not be parsed
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `schema` | const | Always `diffs.work/portable@1` |
+| `kind` | enum | Which view renders it; decided by the input's file family |
+| `engine` | string | The kernel that actually produced this result (for cross-checking and support) |
+| `counts.added` / `.removed` | int | Rows (paragraphs / cells / slides for Office families) |
+| `counts.changed` | int | How many were judged an *edit* rather than an add plus a remove |
+| `counts.ratio` | float 0..1 | Share changed; for sorting and overview only, **never part of a decision** |
+| `summary` | string | A one-line summary for a human
+| `summary` | string | A one-line summary for a human (what the terminal prints)
+| `warnings` | string[] | Non-fatal notes; **always show these to the user** when present |
+
+## hunks (text / code / Markdown)
+
+```jsonc
+{
+  "operation": "update",          // insert | delete | update | move
+  "beforeStart": 5, "beforeEnd": 5,
+  "afterStart": 5, "afterEnd": 5,
+  "lines": [
+    { "kind": "upd-del", "oldNo": 5, "newNo": null, "text": "…", "segments": [ … ] },
+    { "kind": "upd-ins", "oldNo": null, "newNo": 5, "text": "…", "segments": [ … ] },
+    { "kind": "ctx",     "oldNo": 6, "newNo": 6, "text": "…", "segments": null }
+  ]
+}
+```
+
+`lines[].kind` has exactly six values:
+
+| kind | Meaning |
+|---|---|
+| `ctx` | Unchanged, shown as context |
+| `del` / `ins` | A whole row removed / added |
+| `upd-del` / `upd-ins` | **The two halves of one edit**: the old row and the new one. Always adjacent, in that order |
+| `move` | Unchanged text that is now somewhere else: shown on both sides |
+
+`segments` are the marks inside a row; concatenated in order they are exactly `text`:
+
+| `op` | Meaning |
+|---|---|
+| `same` | Characters that did not change |
+| `del` | Characters removed from the old row |
+| `ins` | Characters added in the new row |
+
+<Callout tone="note" title="Why an edit is two rows, not one old/new object.">
+A side-by-side view and a unified view consume the same order, which lets one result feed both.
+And each half carries only what it lost or gained, so the marks on the two sides cannot contaminate
+each other.
+</Callout>
+
+## moves
+
+```jsonc
+{ "fromStart": 4, "fromEnd": 8, "toStart": 6, "toEnd": 10, "text": "…" }
+```
+
+When a row appears both as a `del` and an `ins`, a reader easily misreads "moved" as "deleted and
+re-added" — which is the reading that hides things. So whole-block relocation is reported
+separately: the same content changed position, and it is **neither a deletion nor an addition**.
+
+## Units
+
+- Every row, paragraph, slide and page number is **1-based**;
+- Columns in code are **UTF-8 byte offsets** (the same convention as tree-sitter and Neovim);
+  VS Code and LSP want UTF-16, which a consumer computes per line;
+- For Office families a "row" is a paragraph, a cell or a slide, not a line of text.
+
+## Writing your own kernel
+
+Three things and your implementation interoperates with this site, the plugin and the CLI:
+
+1. input is two files' contents (or paths) plus a `kind`;
+2. output is a `portable@1` object with the semantics above;
+3. the same input always produces the same output (no time, randomness, locale, or filesystem
+   order).
+
+The rendering layer here knows no specific kernel; it knows this shape. So do the plugin and the
+CLI.

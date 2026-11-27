@@ -1,0 +1,13 @@
+{
+  "name": "@diffs/mf2",
+  "version": "0.3.0",
+  "description": "MessageFormat 2 (Unicode MF2) subset: pattern / .input / .local / .match, :number / :date / :currency, plural + bidi isolation.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "license": "MIT"
+}

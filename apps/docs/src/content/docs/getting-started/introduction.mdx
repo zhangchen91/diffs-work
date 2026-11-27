@@ -1,0 +1,43 @@
+---
+title: diffs.work 是什么
+description: 本地优先、零上传的差异比对工具；WASM 按文件族拆分，人和 agent 用同一套结果。
+group: Start
+order: 1
+lang: zh
+---
+
+## 一句话
+
+**Diff everything, in your browser.** Word / Excel / PowerPoint / PDF / Markdown / 代码 —— 拖进来就能比，
+文件内容**从不离开你的设备**。
+
+## 三层产品
+
+| 层 | 入口 | 做什么 |
+|---|---|---|
+| 官网 | https://diffs.work | 浏览器内直接对比（文本族开箱可用），介绍与下载 |
+| 文档 | https://docs.diffs.work | 你正在看的这份 |
+| 本地站 | `diffs local` → `127.0.0.1:5279` | 本地快速预览 + **Inbox**：agent / 扩展 / CLI 投递的对比在这里集中打开 |
+
+外加两个集成：**DeepSeek Harness 插件**（`apps/dsh-plugin`）与 **浏览器扩展**（`apps/chrome-extension`），
+它们都只调用同一份 `diff.compare` 契约。
+
+## 为什么不走服务端
+
+- 合同、尽调底稿、未发布代码这类文件，**不允许上传**是硬约束；
+- 服务端比对意味着带宽、存储、合规三份成本，与「本地优先」的定位自相矛盾；
+- 现代浏览器 + WASM 已经能在本地跑完 OOXML 解析、PDF 渲染与格级比对——不上传、不装软件。
+
+## 边界
+
+| 它做 | 它不做 |
+|---|---|
+| 说清楚「变了什么」 | 判断「该不该这么变」 |
+| 在浏览器 / 你的机器上算 | 把文件传到任何服务器 |
+| 给人看、给 Agent 调、给 CI 读 | 替你决定要不要合并 |
+
+## 下一步
+
+- [安装与本地启动](/getting-started/installation/)
+- [在浏览器里对比](/compare/website/)
+- [DeepSeek Harness 插件](/integrate/deepseek-harness/)

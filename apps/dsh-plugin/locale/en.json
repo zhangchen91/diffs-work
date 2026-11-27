@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "title": "diffs.work compare",
+    "description": "Every comparison an agent makes lands as a diff card in the conversation, and this session's comparisons collect into a pending list: file pair, +/- counts, per-line changes, open in the local diffs.work viewer."
+  },
+  "diffs.card.open": "Open in local viewer",
+  "diffs.pending.title": "Pending comparisons",
+  "diffs.pending.empty": "No comparisons in this session yet.",
+  "diffs.dock.online": "Local viewer online",
+  "diffs.dock.offline": "Local viewer not running"
+}

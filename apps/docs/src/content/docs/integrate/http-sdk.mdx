@@ -1,0 +1,83 @@
+---
+title: HTTP 与 SDK
+description: 任何语言都能接：一个 POST 接口 + 一份 JSON 契约；Node 里用 diff.compare 直接拿同一个结果。
+group: Integrate
+order: 7
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+## HTTP
+
+本地站启动后（`diffs local`），按契约 POST 两份内容：
+
+```bash
+curl -s http://127.0.0.1:5279/api/diff \
+  -H 'content-type: application/json' \
+  -d '{ "old": "/path/a.ts", "new": "/path/b.ts", "context": 3 }'
+```
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `old` / `new` | 是 | 两份文件路径（服务端读文件）；与 `revision` 同用时 `new` 可省略 |
+| `revision` | 否 | git 版本（如 `HEAD~1`），与工作区对比 |
+| `cwd` | 否 | 相对路径基准 |
+| `context` | 否 | 上下文行数（默认 3） |
+| `maxHunks` | 否 | hunk 上限（默认 40） |
+| `format` | 否 | `json`（默认）/ `unified` |
+
+GET 也可以，参数走查询串：`/api/diff?old=a.ts&new=b.ts`。
+
+返回 `portable@1`（字段见[契约](/reference/portable/)）。
+
+<Callout tone="note" title="只监听 127.0.0.1。">
+本地站不接受外部连接。要给别人用，把构建产物部署到你自己的域名（见[部署](/getting-started/installation/)），
+而不是把本地站暴露出去。
+</Callout>
+
+## Node SDK
+
+<Callout tone="warn" title="这个包还没发布到 npm。">
+`@diffs/diff-tool` 目前只存在于本仓库（`packages/diff-tool`），`npm i` 会 404。
+现在要用它，请在仓库里用 pnpm workspace 引用，或者用下面的 HTTP 接口。
+</Callout>
+
+在仓库内（pnpm workspace）：
+
+```bash
+pnpm --filter <你的包> add @diffs/diff-tool@workspace:*
+```
+
+```ts
+import { compareFiles, summarizeThin } from "@diffs/diff-tool";
+
+const r = await compareFiles({ old: "before.ts", new: "after.ts" });
+console.log(summarizeThin(r));      // "1 处差异 · +11/-7 行 · symbols +2/-2"
+console.log(r.hunks?.[0]?.lines);   // 行、行内标记
+```
+
+同一个模块也导出 MCP 工具描述与参数 schema，方便包一层自己的 server：
+
+```ts
+import { DIFF_TOOL_NAME, DIFF_TOOL_DESCRIPTION, DIFF_TOOL_PARAMETERS } from "@diffs/diff-tool";
+```
+
+这个模块是 Node-only（要读文件、跑 `git diff`）；浏览器里请直接用页内的 wasm 内核。
+
+## 用别的语言接
+
+契约只有两个输入、一个输出，所以任何语言都能直接实现（或者只做 HTTP 客户端）：
+
+- 只要**调用**：走 HTTP，POST 两份内容即可；
+- 想要一个**内核**：输出符合 `portable@1` 的实现都能接到本站的渲染层（见契约页最后一节）。
+
+## 常见问题
+
+**能比对目录吗？** 目前是逐文件；目录级对比在路线图上。
+
+**能返回 HTML 吗？** 不返回。视图由各个前端自己渲染，契约只描述**差异**。
+
+**有速率限制吗？** 本地站没有；本站没账号体系，也就没有配额。

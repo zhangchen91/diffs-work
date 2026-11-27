@@ -1,0 +1,22 @@
+{
+  "name": "diffs",
+  "version": "0.2.0",
+  "description": "diffs.work CLI — start the local diff viewer / inbox, or diff two files.",
+  "type": "module",
+  "bin": {
+    "diffs": "./lib/bin.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@diffs/diff-tool": "workspace:*",
+    "@diffs/shared": "workspace:*"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-cli.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ]
+}

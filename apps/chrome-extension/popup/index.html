@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>diffs.work</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <span class="brand">diffs<span>.work</span></span>
+      <span class="tag">local · 0 上传</span>
+    </header>
+
+    <label class="field">
+      <span>本地站地址</span>
+      <input id="localBase" type="text" spellcheck="false" placeholder="http://127.0.0.1:5279" />
+    </label>
+
+    <div class="grid">
+      <div class="col">
+        <div class="label">旧版 / Old</div>
+        <input id="f1" type="file" />
+        <textarea id="t1" placeholder="或粘贴文本…"></textarea>
+      </div>
+      <div class="col">
+        <div class="label">新版 / New</div>
+        <input id="f2" type="file" />
+        <textarea id="t2" placeholder="或粘贴文本…"></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="compare" class="primary">对比</button>
+      <button id="openLocal">打开本地站</button>
+      <button id="openInbox">Inbox</button>
+    </div>
+
+    <div id="inbox" class="inbox"></div>
+    <div id="hint" class="hint">右键菜单：记住左侧文件 → 和左侧文件对比</div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

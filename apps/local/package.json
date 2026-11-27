@@ -1,0 +1,42 @@
+{
+  "name": "@diffs/local",
+  "version": "0.2.0",
+  "private": true,
+  "description": "diffs.work local viewer + inbox — started with `diffs local`, never deployed to the public web.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5182 --strictPort",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview --port 5182 --strictPort",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@diffs/core-code": "workspace:*",
+    "@diffs/core-text": "workspace:*",
+    "@diffs/diff-core": "workspace:*",
+    "@diffs/dom-utils": "workspace:*",
+    "@diffs/engine-bundle": "workspace:*",
+    "@diffs/shared": "workspace:*",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.545.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.3.1",
+    "@diffs/core-xlsx": "workspace:*",
+    "@diffs/core-markdown": "workspace:*",
+    "@diffs/core-code-ast": "workspace:*",
+    "@diffs/i18n": "workspace:*",
+    "@diffs/mf2": "workspace:*",
+    "@diffs/core-pdf": "workspace:*",
+    "@diffs/diff-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
+  }
+}

@@ -1,0 +1,62 @@
+---
+title: 浏览器扩展
+description: 在任意网页上右键两段选中文字、或两个链接，直接比对——同一套判定，同一个结果。
+group: Integrate
+order: 4
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+扩展解决的是「内容已经在网页上了，但拿不下来」这一类场景：GitLab 的 MR 描述、Notion 页面、
+邮件里的两份附件说明、一份在线合同的两次修订。
+
+## 怎么用
+
+1. **两段选中文字**：选中第一段 → 右键「对比选中内容」→ 选中第二段 → 右键「与上一段对比」；
+2. **两个链接**：同时选中两个链接 → 右键「对比这两个链接」；
+3. 结果在本地打开（`diffs local` 在跑时）或在新标签页里打开本站。
+
+扩展不读取页面上你没有选中的内容，也不上传任何东西。
+
+## 它调用什么
+
+扩展把两段内容放进一个 exchange 存储，然后打开 `https://diffs.work/#/compare?pair=<id>`。
+页面通过 `postMessage` 取回内容，走和手动拖入**完全相同**的比对路径。
+
+```js
+window.postMessage({ type: "diffs-work:pair:request", id }, "*");
+// 页面回 postMessage({ type: "diffs-work:pair:response", id, pair })
+```
+
+<Callout tone="note" title="为什么用 postMessage 而不是 URL 参数。">
+URL 有长度限制，而合同 / 代码很容易超过几 KB。交换一次 id，内容仍然只在本地与页面之间移动。
+</Callout>
+
+## 安装
+
+- 从 Chrome Web Store 安装（MV3）；
+- 或从源码构建：`pnpm --filter @diffs/chrome-extension build`，然后在 `chrome://extensions` 里「加载已解压的扩展程序」。
+
+## 权限
+
+| 权限 | 用途 |
+|---|---|
+| `contextMenus` | 右键菜单 |
+| `storage` | 暂存两段待比对的内容（本地） |
+| `activeTab` | 你主动操作时读取当前标签 |
+| `unlimitedStorage` | 暂存的内容不设上限 |
+| `<all_urls>`（host permission） | **内容脚本要能在你右键的那一页运行**，面板才画得出来 |
+
+这一条要说明白：内容脚本的 `matches` 是 `<all_urls>`，而它的注入**还需要 host permission 覆盖
+那个源**。之前这里写的是 `http://127.0.0.1/*`，不覆盖带端口的源（比如 `:5199`），于是扩展在
+每个开发服务器上都不工作，而且不报错。
+
+扩展**不向任何第三方发请求**：面板在页面里画，比对在本地算。但 `host_permissions` 的授权范围
+确实覆盖所有站点，写在这里而不是含糊过去。
+
+## 状态
+
+**已上线**。源码在 `apps/chrome-extension/`（开源），与本站、插件、CLI 共用同一份契约。

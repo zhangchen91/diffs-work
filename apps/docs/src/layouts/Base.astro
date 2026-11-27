@@ -1,0 +1,70 @@
+---
+import "../styles/global.css";
+interface Props { title: string; description?: string; lang?: "zh" | "en"; altHref?: string }
+const { title, description, lang = "zh", altHref } = Astro.props;
+const altLabel = lang === "en" ? "中文" : "English";
+---
+<!doctype html>
+<html lang={lang === "en" ? "en" : "zh-CN"}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* A per-build stamp. Cloudflare Pages caches HTML at the edge and `_headers` does not reach
+         an object that is already cached, so changing the document itself is the only way to
+         retire a stale copy. The website has had this since day one; the docs did not, and a
+         deploy could sit behind the old page indefinitely. */}
+    <meta name="diffs-build" content={new Date().toISOString()} />
+    <title>{title}</title>
+    <meta name="description" content={description ?? "diffs.work 文档"} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="docs-top">
+      <div class="docs-top-inner">
+        <a href={lang === "en" ? "/en/" : "/"} class="docs-brand">
+          <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="1.5" y="1.5" width="29" height="29" rx="8.5" fill="#0b0d13" stroke="#6ee7b7" stroke-width="1.6" />
+            <path d="M10 10.5h5.4M10 16h6.4M10 21.5h4.6" stroke="#4b5567" stroke-width="2" stroke-linecap="round" />
+            <path d="M19 9v14M23.5 9v14" stroke="#6ee7b7" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+          docs<span>.diffs.work</span>
+        </a>
+        <nav class="ml-auto flex items-center gap-4 text-[13px] text-slate-400">
+          <button
+            type="button"
+            data-search-open
+            class="flex items-center gap-1.5 rounded border border-[#1e222d] px-2 py-1 text-[12px] text-slate-400 hover:text-white"
+            aria-label={lang === "en" ? "Search the docs" : "搜索文档"}
+          >
+            <span>{lang === "en" ? "Search" : "搜索"}</span>
+            <kbd class="rounded bg-[#161a22] px-1 font-mono text-[10px] text-slate-500">/</kbd>
+          </button>
+          <a class="hover:text-white" href={lang === "en" ? "/en/getting-started/installation/" : "/getting-started/installation/"}>{lang === "en" ? "Install" : "安装"}</a>
+          <a class="hover:text-white" href={lang === "en" ? "/en/reference/tool-contract/" : "/reference/tool-contract/"}>{lang === "en" ? "Contract" : "工具契约"}</a>
+          <a class="hover:text-white" href={lang === "en" ? "/en/reference/configuration/" : "/reference/configuration/"}>{lang === "en" ? "Configure" : "配置"}</a>
+          <a class="hover:text-white" href="https://diffs.work/#/compare">{lang === "en" ? "Open the comparer ↗" : "打开对比器 ↗"}</a>
+          {altHref ? <a class="rounded border border-[#1e222d] px-2 py-1 text-[12px] hover:text-white" href={altHref}>{altLabel}</a> : null}
+        </nav>
+      </div>
+    </header>
+    <slot />
+    <footer class="docs-foot">
+      docs.diffs.work · {lang === "en" ? "open-source tooling on a closed-source WASM kernel" : "开源周边 + 闭源 WASM 内核"} · <a href="https://diffs.work">diffs.work</a>
+    </footer>
+    <div data-docs-search hidden class="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-[12vh]">
+      <div class="w-full max-w-xl overflow-hidden rounded-xl border border-[#1e222d] bg-[#0b0d13] shadow-2xl">
+        <div class="flex items-center gap-2 border-b border-[#1e222d] px-3 py-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 text-slate-500"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+          <input
+            type="search"
+            placeholder={lang === "en" ? "Search the docs…" : "搜索文档…"}
+            class="w-full bg-transparent px-1 py-1 text-[14px] text-slate-100 outline-none placeholder:text-slate-600"
+          />
+          <kbd class="rounded bg-[#161a22] px-1.5 py-0.5 font-mono text-[10px] text-slate-600">esc</kbd>
+        </div>
+        <div data-results class="max-h-[55vh] overflow-auto"></div>
+      </div>
+    </div>
+    <script is:inline src="/search.js"></script>
+  </body>
+</html>

@@ -1,0 +1,88 @@
+---
+title: HTTP and SDK
+description: "Usable from any language: one POST endpoint plus one JSON contract; in Node, diff.compare gives you the same result directly."
+group: Integrate
+order: 7
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+## HTTP
+
+Once the local site is running (`diffs local`), POST two contents against the contract:
+
+```bash
+curl -s http://127.0.0.1:5279/api/diff \
+  -H 'content-type: application/json' \
+  -d '{ "old": "/path/a.ts", "new": "/path/b.ts", "context": 3 }'
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| `old` / `new` | Yes | Two file paths (the server reads the files); when used with `revision`, `new` may be omitted |
+| `revision` | No | git revision (e.g. `HEAD~1`), compared against the working tree |
+| `cwd` | No | Base for relative paths |
+| `context` | No | Lines of context (default 3) |
+| `maxHunks` | No | Hunk cap (default 40) |
+| `format` | No | `json` (default) / `unified` |
+
+GET works too, with parameters in the query string: `/api/diff?old=a.ts&new=b.ts`.
+
+It returns `portable@1` (fields in the [contract](/en/reference/portable/)).
+
+<Callout tone="note" title="It listens on 127.0.0.1 only.">
+The local site does not accept external connections. To share it, deploy the build output to your own
+domain (see [Installation](/en/getting-started/installation/)), rather than exposing the local site.
+</Callout>
+
+## Node SDK
+
+<Callout tone="warn" title="This package is not on npm yet.">
+`@diffs/diff-tool` lives only in this repository (`packages/diff-tool`); `npm i` returns 404.
+To use it today, reference it from inside the pnpm workspace, or use the HTTP endpoint below.
+</Callout>
+
+From inside the repository (pnpm workspace):
+
+```bash
+pnpm --filter <your-package> add @diffs/diff-tool@workspace:*
+```
+
+```ts
+import { compareFiles, summarizeThin } from "@diffs/diff-tool";
+
+const r = await compareFiles({ old: "before.ts", new: "after.ts" });
+console.log(summarizeThin(r));      // "1 处差异 · +11/-7 行 · symbols +2/-2"
+console.log(r.hunks?.[0]?.lines);   // lines, and the marks within them
+```
+
+The same module also exports the MCP tool description and parameter schema, handy for wrapping your
+own server:
+
+```ts
+import { DIFF_TOOL_NAME, DIFF_TOOL_DESCRIPTION, DIFF_TOOL_PARAMETERS } from "@diffs/diff-tool";
+```
+
+This module is Node-only (it reads files and runs `git diff`); in the browser, use the on-page wasm
+kernel directly.
+
+## Integrating from another language
+
+The contract has just two inputs and one output, so any language can implement it directly (or just be
+an HTTP client):
+
+- if you only need to **call** it: go over HTTP and POST the two contents;
+- if you want a **kernel**: any implementation whose output conforms to `portable@1` can plug into this
+  site's rendering layer (see the last section of the contract page).
+
+## Common questions
+
+**Can it compare directories?** Currently file by file; directory-level comparison is on the roadmap.
+
+**Can it return HTML?** No. Each front end renders the view itself; the contract describes only the
+**differences**.
+
+**Is there a rate limit?** Not on the local site; this site has no accounts, and therefore no quota.

@@ -1,0 +1,83 @@
+---
+title: PowerPoint (.pptx)
+description: "Investment committee decks, business plans, training material: which slide changed, which slide moved, and which lines of text changed."
+group: Formats
+order: 4
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+Reviewing a PPT has two common pitfalls: **the slide order changed**, and **half a sentence changed on
+one slide**. Comparing page by page turns "one slide was moved" into "every slide after it changed",
+so slides are aligned first, and only then are the texts compared.
+
+## What it compares
+
+It reads the text boxes and their text (`a:t`) in `ppt/slides/slideN.xml`, plus the **slide order** in
+`ppt/presentation.xml`:
+
+- each slide's **title** and body bullets (notes outside the body text and page numbers do not
+  count);
+- the order of slides;
+- speaker notes (an optional switch; off by default).
+
+Not read: layouts, masters, animations, transitions, images.
+
+## How it decides
+
+<Doc kind="step" n="1" title="Align by slide" />
+
+Using each slide's **title** as the primary key and the slide's full text as a tie-breaker, it finds
+where "the same slide" sits on each side. No counterpart found → the slide was added or deleted.
+
+<Doc kind="step" n="2" title="Compare within a slide" />
+
+Text on the same slide is compared **paragraph** by paragraph: bullets added, removed, rewritten. A
+rewrite likewise requires "a long enough common prefix and suffix to count as an edit", and the
+changed characters are marked within the paragraph.
+
+<Doc kind="step" n="3" title="Whole-slide relocation" />
+
+A slide disappears from its old place and reappears elsewhere unchanged, with identical content → a
+**move**, stating "slide N → slide M". This is very common when reordering "conclusion first or data
+first", and it is the change people most easily overlook.
+
+## What the result looks like
+
+```jsonc
+{
+  "kind": "pptx",
+  "slides": [
+    { "index": 7, "title": "Financial forecast", "status": "changed",
+      "changes": [ { "op": "mod", "old": "2026 revenue 120M", "new": "2026 revenue 150M" } ] },
+    { "index": 3, "title": "The team", "status": "moved", "from": 9 }
+  ]
+}
+```
+
+## What it cannot see
+
+| Cannot see | Why |
+|---|---|
+| Pixel differences in images and charts | That is image comparison |
+| Subtle movement of layouts and positions | Layout adjustments are not content changes |
+| Animations / transitions | Unrelated to content |
+| Notes pages | Off by default, can be switched on |
+
+<Callout tone="note" title="On 'same number of slides, different order'.">
+This is the most common and most easily missed kind of change. The view orders rows by the alignment
+result rather than by page number, so you can see at a glance that "slide 9 became slide 3" instead
+of "slides 3 through 9 all changed".
+</Callout>
+
+## Common questions
+
+**Every slide shows "delete + add"?** Most likely the titles sit in different text boxes, or the two
+export tools split the title into different runs. Check first whether the aligned titles in the view
+match.
+
+**Only one slide changed, but the whole deck is red?** Check whether a deleted slide threw the
+alignment off; the view lists "slide N deleted" explicitly in the change list.

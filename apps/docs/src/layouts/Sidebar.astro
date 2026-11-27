@@ -1,0 +1,41 @@
+---
+import { getCollection } from "astro:content";
+interface Props { lang?: "zh" | "en"; current?: string }
+const { lang = "zh", current = "" } = Astro.props;
+const docs = await getCollection("docs");
+const groups = ["Start", "Concepts", "Formats", "Integrate", "Reference"] as const;
+const groupLabel: Record<string, Record<string, string>> = {
+  en: { Start: "Getting started", Concepts: "Concepts", Formats: "File formats", Integrate: "Integrations", Reference: "Reference" },
+  zh: { Start: "开始", Concepts: "核心概念", Formats: "文件类型", Integrate: "接入", Reference: "参考" },
+};
+const mine = docs.filter((d) => (lang === "en" ? d.id.startsWith("en/") : !d.id.startsWith("en/")));
+const byGroup = groups
+  .map((g) => ({ group: g, items: mine.filter((d) => d.data.group === g).sort((a, b) => a.data.order - b.data.order) }))
+  .filter((g) => g.items.length > 0);
+---
+<aside class="docs-side">
+  {/* On a phone the sidebar is hidden by CSS at 820px, which left no way to move between pages
+       at all — search and the header links were the only exits. A <details> gives the same list
+       there; it stays out of the way on a wide screen. */}
+  <details class="docs-side-mobile">
+    <summary>Menu</summary>
+    <div class="docs-side-mobile-body">
+      {byGroup.map(({ group, items }) => (
+        <div class="docs-side-group">
+          <div class="docs-side-title">{groupLabel[lang][group]}</div>
+          {items.map((d) => (
+            <a href={`/${d.id}/`} aria-current={current === d.id ? "page" : undefined}>{d.data.title}</a>
+          ))}
+        </div>
+      ))}
+    </div>
+  </details>
+  {byGroup.map(({ group, items }) => (
+    <div class="docs-side-group">
+      <div class="docs-side-title">{groupLabel[lang][group]}</div>
+      {items.map((d) => (
+        <a href={`/${d.id}/`} aria-current={current === d.id ? "page" : undefined}>{d.data.title}</a>
+      ))}
+    </div>
+  ))}
+</aside>

@@ -1,0 +1,12 @@
+{
+  "name": "01-add-col",
+  "kind": "excel",
+  "before": "01-add-col.before.xlsx",
+  "after": "01-add-col.after.xlsx",
+  "expect": {
+    "ops": [
+      "add"
+    ],
+    "notOps": []
+  }
+}

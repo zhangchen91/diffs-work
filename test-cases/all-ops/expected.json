@@ -1,0 +1,47 @@
+{
+  "description": "all-ops acceptance: 7 type pairs, each with exactly 1 add, 1 del, 1 mod, 1 move (move is unique). 'plain' = line-level diff (+/- line counts). 'ours' = entity-level diff over identity keys (see scripts/all-ops-check.mjs).",
+  "cases": {
+    "ts": {
+      "files": ["ts.before.ts", "ts.after.ts"],
+      "identity": "top-level function name",
+      "ours": { "add": ["roundHalfUp"], "del": ["legacyRound"], "mod": ["applyTax"], "move": ["parsePrice"] },
+      "plain": null
+    },
+    "rust": {
+      "files": ["rust.before.rs", "rust.after.rs"],
+      "identity": "top-level fn name",
+      "ours": { "add": ["grand_total"], "del": ["legacy_label"], "mod": ["discount_rate"], "move": ["parse_qty"] },
+      "plain": null
+    },
+    "md": {
+      "files": ["md.before.md", "md.after.md"],
+      "identity": "## heading text",
+      "ours": { "add": ["保密义务"], "del": ["违约责任"], "mod": ["质保"], "move": ["付款方式"] },
+      "plain": null
+    },
+    "excel": {
+      "files": ["excel.before.xlsx", "excel.after.xlsx"],
+      "identity": "column A (编号)",
+      "ours": { "add": ["A-006"], "del": ["A-005"], "mod": ["A-003"], "move": ["A-001"] },
+      "plain": null
+    },
+    "word": {
+      "files": ["word.before.docx", "word.after.docx"],
+      "identity": "paragraph label before 全角冒号 (title paragraph excluded)",
+      "ours": { "add": ["保密"], "del": ["验收"], "mod": ["交付"], "move": ["争议"] },
+      "plain": null
+    },
+    "ppt": {
+      "files": ["ppt.before.pptx", "ppt.after.pptx"],
+      "identity": "slide title (first text run)",
+      "ours": { "add": ["退出路径"], "del": ["风险提示"], "mod": ["财务预测"], "move": ["团队介绍"] },
+      "plain": null
+    },
+    "pdf": {
+      "files": ["pdf.before.pdf", "pdf.after.pdf"],
+      "identity": "line label before 全角冒号",
+      "ours": { "add": ["争议解决"], "del": ["保密义务"], "mod": ["费用分担"], "move": ["知识产权"] },
+      "plain": null
+    }
+  }
+}

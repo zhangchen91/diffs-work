@@ -1,0 +1,24 @@
+{
+  "name": "@diffs/i18n",
+  "version": "0.3.0",
+  "description": "diffs.work i18n: MF2 messages, zh-CN + en shipped, community locales plug into LOCALES.",
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./locales": "./src/locales.ts"
+  },
+  "dependencies": {
+    "@diffs/mf2": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "sideEffects": false,
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "react": "^19.3.1"
+  }
+}

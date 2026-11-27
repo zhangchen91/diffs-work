@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "title": "diffs.work 对比",
+    "description": "让 agent 的每一次比对都以差异卡片出现在对话里，并把本会话的对比记录汇成待处理列表：文件对、+/- 计数、逐行增删改，一键在本地 diffs.work 视图里打开。"
+  },
+  "diffs.card.open": "在本地视图中打开",
+  "diffs.pending.title": "待处理对比",
+  "diffs.pending.empty": "本会话还没有对比记录。",
+  "diffs.dock.online": "本地视图在线",
+  "diffs.dock.offline": "本地视图未运行"
+}

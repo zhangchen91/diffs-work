@@ -1,0 +1,108 @@
+---
+title: 新增一种文件格式
+description: 按统一差异协议实现一个 wasm，站点、插件、扩展同时支持。
+group: Reference
+order: 4
+lang: zh
+---
+
+按 [差异协议](/reference/portable/) 实现一个 wasm，就能让站点、DSH 插件、Chrome 扩展同时支持
+它。不需要改这些调用方——它们只认协议。
+
+## 一、写一个最小的 wasm
+
+任何能编译成 `wasm32-unknown-unknown` 的语言都行。签名固定：
+
+```
+diffs_alloc(len: usize) -> *mut u8      // 分配输入缓冲
+diffs_handle(ptr: *mut u8, len: usize) -> *mut u8   // 处理，返回指向结果
+diffs_box_len(ptr: *mut u8) -> usize    // 结果的长度（前面 4 字节存长度）
+diffs_free(ptr: *mut u8, total: usize)
+```
+
+输入是 UTF-8 的 JSON，输出也是：
+
+```json
+{
+  "cmd": "diff",
+  "a": "<base64 旧文件>",
+  "b": "<base64 新文件>"
+}
+```
+
+返回 `DiffResult`（见协议文档）。最小值只要这些：
+
+```json
+{
+  "engine": "your-format-wasm",
+  "kind": "yourformat",
+  "summary": "3 处新增 / 1 处删除",
+  "changes": [
+    { "ops": ["add"], "container": "", "where": "第 2 行", "after": "新内容" }
+  ],
+  "totals": { "add": 1, "del": 0, "mod": 0, "move": 0 }
+}
+```
+
+## 二、注册
+
+在 `apps/website/src/lib/formats.ts` 的 `EXT_TO_FAMILY` 里加扩展名，在 `FORMATS` 里加一条：
+
+```ts
+{
+  id: "yourformat",
+  label: "format.yourformat.label",
+  exts: [".xyz"],
+  blurb: "format.yourformat.blurb",
+  engine: "your-format.wasm",
+  engineSize: "—",
+  live: false,
+  accent: "#7dd3fc",
+}
+```
+
+然后在 `packages/i18n/src/messages/zh-CN.ts` 和 `en.ts` 各补三条文案。
+
+## 三、准备一组用例
+
+`test-cases/yourformat/` 下每对 `*.before.*` / `*.after.*` 配一个 `*.case.json`：
+
+```json
+{
+  "name": "01-add",
+  "kind": "yourformat",
+  "before": "01-add.before.xyz",
+  "after": "01-add.after.xyz",
+  "expect": { "ops": ["add"], "notOps": ["move"] }
+}
+```
+
+每类 6 个左右，覆盖单独一种变更、以及几种同时出现。`--only` 匹配的是 `test-cases/` 下的**目录名**
+（某个格式放在 `test-cases/yourformat/` 就写 `--only yourformat`）；名字对不上时会显示 0/0。跑：
+
+```bash
+node scripts/run-cases.mjs --only yourformat
+```
+
+`expect.ops` 列的是**必须出现**的动作。做不到的（比如某种格式无法区分移动）就写进
+`note`，不要写成通过。
+
+## 四、渲染
+
+如果你的格式需要专门的可视化（像 Excel 的网格、PDF 的标注框），加一个
+`apps/website/src/components/compare/yourformat-view.tsx`，在 `studio.tsx` 里按 `kind` 分发。
+纯文本类格式不用，语义视图可以直接显示。
+
+## 检查清单
+
+- [ ] wasm 导出四个函数，签名一致
+- [ ] 输出符合 `DiffResult`，`ops` 只用 `add` / `del` / `mod` / `move`
+- [ ] 至少 6 个用例，`run-cases` 全绿
+- [ ] 中英文文案都补了
+- [ ] 有 `examples/` 下的样例对，站点能直接试
+- [ ] 已知限制写进了用例的 `note`
+
+## 许可
+
+核心比对模块（`apps/engine-core`）是闭源二进制，周边是 MIT。你的格式模块以 MIT 提交即可，
+不需要动核心引擎。

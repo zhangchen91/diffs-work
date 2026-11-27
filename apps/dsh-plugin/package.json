@@ -1,0 +1,60 @@
+{
+  "name": "@diffs/dsh-plugin",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "diffs.work for DeepSeek Harness — the diff_compare tool, /diff-* commands, and the local inbox.",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": "./lib/client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "locale",
+    "docs",
+    "cordis.patch.yml",
+    "README.md",
+    "icon.svg",
+    "engine"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "diff",
+    "diff-everything",
+    "local-first"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-dsh-plugin.mjs",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.host.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "prepare": "node ../../scripts/build-dsh-plugin.mjs",
+    "prepublishOnly": "node ../../scripts/build-dsh-plugin.mjs"
+  },
+  "dependencies": {
+    "@diffs/diff-tool": "workspace:*",
+    "@diffs/shared": "workspace:*",
+    "@diffs/core-ooxml": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "01-add-slide",
+  "kind": "ppt",
+  "before": "01-add-slide.before.pptx",
+  "after": "01-add-slide.after.pptx",
+  "expect": {
+    "ops": [
+      "add"
+    ],
+    "notOps": []
+  }
+}

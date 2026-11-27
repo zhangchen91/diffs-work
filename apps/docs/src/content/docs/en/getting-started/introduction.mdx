@@ -1,0 +1,35 @@
+---
+title: What is diffs.work
+description: A local-first, zero-upload diff tool. WASM split per file family, one result for people and agents.
+group: Start
+order: 1
+lang: en
+---
+
+## In one line
+
+**Diff everything, in your browser.** Word, Excel, PowerPoint, PDF, Markdown and code — drop two files in and compare them.
+Their content **never leaves your device**.
+
+## Three surfaces
+
+| Surface | Where | What it does |
+|---|---|---|
+| Website | https://diffs.work | Compare in the browser (text families work immediately), plus the pitch and downloads |
+| Docs | https://docs.diffs.work | This site |
+| Local | `diffs local` → `127.0.0.1:5279` | Local preview plus an **inbox** where comparisons posted by agents, the extension or the CLI collect |
+
+Two integrations use the same contract: the **DeepSeek Harness plugin** (`apps/dsh-plugin`) and the
+**browser extension** (`apps/chrome-extension`). Both call the same `diff.compare`.
+
+## Why there is no server
+
+- Contracts, diligence drafts and review reports usually **may not be uploaded** — that is a hard rule, not a preference.
+- Server-side comparison means paying three ways: bandwidth, storage and compliance — the opposite of local-first.
+- A modern browser with WASM already parses OOXML, renders PDFs and compares cells locally — no upload, no install.
+
+## Next
+
+- [Install and start locally](/en/getting-started/installation/)
+- [Compare in the browser](/en/compare/website/)
+- [DeepSeek Harness plugin](/en/integrate/deepseek-harness/)

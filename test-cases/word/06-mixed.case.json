@@ -1,0 +1,14 @@
+{
+  "name": "06-mixed",
+  "kind": "word",
+  "before": "06-mixed.before.docx",
+  "after": "06-mixed.after.docx",
+  "expect": {
+    "ops": [
+      "add",
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "混合场景下移动未被识别（与其他改动相邻时配对失败）"
+}

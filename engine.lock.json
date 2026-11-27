@@ -1,0 +1,26 @@
+{
+  "$comment": "Pinned engine bundles. Update url+sha256 together. dsh ships no engines of its own.",
+  "engines": [
+    {
+      "id": "docxodus",
+      "version": "0.0.0-local",
+      "url": "https://example.invalid/docxodus.zip",
+      "sha256": "",
+      "note": "docxodus browser bundle + .NET wasm framework; sync from vendored/engine until a public archive is pinned"
+    },
+    {
+      "id": "pdfjs",
+      "version": "4.x",
+      "url": "https://example.invalid/pdfjs.zip",
+      "sha256": "",
+      "note": "pdf.js ESM build + worker"
+    },
+    {
+      "id": "rules-core",
+      "version": "built-from-this-repo",
+      "url": "",
+      "sha256": "",
+      "note": "our own Rust kernels: never fetched, always built by `pnpm build:rules`"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* The diff views live in a workspace package; Tailwind v4 only scans this project by default,
+   so classes like `md:flex-row` inside @diffs/diff-ui were never generated and the layout
+   silently stayed one-column. */
+@source "./../../../../packages/diff-ui/src/**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-ink: #05060a;
+  --color-panel: #0b0d13;
+  --color-panel-2: #11141c;
+  --color-line: #1e222d;
+  --color-brand: #6ee7b7;
+  --color-brand-2: #38bdf8;
+  --color-add: #3fb950;
+  --color-del: #f85149;
+  --color-mod: #d29922;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #05060a;
+  --fg: #e6e8ee;
+  --muted: #8b93a7;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 35%, transparent);
+}
+
+/* thin scrollbars for panes */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2f3d transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #2a2f3d;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.grid-bg {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+.glow {
+  background: radial-gradient(600px circle at 50% 0%, color-mix(in srgb, var(--color-brand) 14%, transparent), transparent 70%);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.5s ease both;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}

@@ -1,0 +1,22 @@
+# diffs.work — one monorepo, every folder deploys / publishes on its own.
+#
+#   apps/website          → Cloudflare Pages: diffs-work.pages.dev（官网）
+#   apps/docs             → Cloudflare Pages: docs-diffs-work.pages.dev（文档站）
+#   apps/local            → 本地快速预览站 / inbox（npx diffs local，不部署到公网）
+#   apps/dsh-plugin       → DeepSeek Harness 插件（npm 包，开源）
+#   apps/chrome-extension → 浏览器插件 MV3（Chrome Web Store，开源）
+#   (the pre-redesign legacy viewer has been removed)
+#   packages/*            → 开源 TS SDK（diff-core / core-* / engine-bundle / dom-utils）
+packages:
+  - "apps/website"
+  - "apps/local"
+  - "apps/cli"
+  - "apps/docs"
+  - "apps/dsh-plugin"
+  - "apps/chrome-extension"
+  - "packages/*"
+
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
+  - sharp

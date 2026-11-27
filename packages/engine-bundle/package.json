@@ -1,0 +1,16 @@
+{
+  "name": "@diffs/engine-bundle",
+  "version": "0.1.0",
+  "description": "TypeScript SDK over the per-family WASM engines (binary, closed source).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./registry": "./src/registry.ts",
+    "./docx": "./src/docx.ts",
+    "./pdf": "./src/pdf.ts"
+  },
+  "sideEffects": false,
+  "license": "LicenseRef-Proprietary"
+}

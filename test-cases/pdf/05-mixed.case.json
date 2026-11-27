@@ -1,0 +1,14 @@
+{
+  "name": "05-mixed",
+  "kind": "pdf",
+  "before": "05-mixed.before.pdf",
+  "after": "05-mixed.after.pdf",
+  "expect": {
+    "ops": [
+      "add",
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "PDF 在浏览器端比对（pdf.js），不在 wasm 里"
+}

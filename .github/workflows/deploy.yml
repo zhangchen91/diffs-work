@@ -1,0 +1,30 @@
+name: Deploy
+
+# Two sites, both connected through Cloudflare's Git integration:
+#   diffs-work → apps/website (build: pnpm build:website, output: apps/website/out)
+#   diffs-docs → apps/docs    (build: pnpm build:docs,    output: apps/docs/dist)
+#
+# A push to main therefore deploys without anything here. This workflow only exists for a
+# manual, token-free check that both projects still build from a clean checkout; publishing
+# stays with Cloudflare so there is exactly one deploy path.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:website
+      - run: pnpm build:docs
+      - name: Report the artifacts Cloudflare would publish
+        run: |
+          du -sh apps/website/out apps/docs/dist
+          test -f apps/website/out/index.html
+          test -f apps/docs/dist/index.html

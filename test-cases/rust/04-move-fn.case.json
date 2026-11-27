@@ -1,0 +1,12 @@
+{
+  "name": "04-move-fn",
+  "kind": "rust",
+  "before": "04-move-fn.rs",
+  "after": "04-move-fn.after.rs",
+  "expect": {
+    "ops": [
+      "move"
+    ],
+    "notOps": []
+  }
+}

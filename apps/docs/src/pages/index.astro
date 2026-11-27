@@ -1,0 +1,96 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+const docs = await getCollection("docs");
+const zh = docs.filter((d) => !d.id.startsWith("en/"));
+const start = zh.filter((d) => d.data.group === "Start").sort((a, b) => a.data.order - b.data.order);
+const groups = [
+  {
+    id: "Start",
+    label: "从这里开始",
+    desc: "它是什么、为什么要本地跑、怎么在五分钟内比出第一份结果。",
+    items: zh.filter((d) => d.data.group === "Start").sort((a, b) => a.data.order - b.data.order),
+  },
+  {
+    id: "Concepts",
+    label: "核心概念",
+    desc: "文件族、portable@1 契约、以及「验证」这件事本身的定义。",
+    items: zh.filter((d) => d.data.group === "Concepts").sort((a, b) => a.data.order - b.data.order),
+  },
+  {
+    id: "Formats",
+    label: "每一种文件",
+    desc: "Word、Excel、PowerPoint、PDF、Markdown、代码、纯文本：各自能比到什么粒度。",
+    items: zh.filter((d) => d.data.group === "Formats").sort((a, b) => a.data.order - b.data.order),
+  },
+  {
+    id: "Integrate",
+    label: "接进你的工作流",
+    desc: "Agent、IDE、git / jj、MCP、Office：每个接入面都有一份可照抄的配置。",
+    items: zh.filter((d) => d.data.group === "Integrate").sort((a, b) => a.data.order - b.data.order),
+  },
+  {
+    id: "Reference",
+    label: "参考",
+    desc: "契约、引擎、注入面、错误码；写给要自己实现一遍的人。",
+    items: zh.filter((d) => d.data.group === "Reference").sort((a, b) => a.data.order - b.data.order),
+  },
+];
+---
+<Base title="diffs.work docs — 让 diff 成为人和 agent 的共同语言" altHref="/en/">
+  <main class="tour">
+    <section class="tour-hero">
+      <div class="tour-kicker">Documentation</div>
+      <h1>让 diff 成为<br />人和 agent 的共同语言</h1>
+      <p>
+        diffs.work 的核心只有一句话：<strong>从两份文件本身算出它们差在哪里，并且让人和 agent 拿到同一个答案。</strong>
+        这份文档既写给要打开它的人，也写给要把它接进流水线的 agent。
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a class="rounded-lg bg-[#6ee7b7] px-4 py-2.5 text-[14px] font-medium text-emerald-950" href={`/${start[0]?.id ?? "getting-started/introduction"}/`}>五分钟上手</a>
+        <a class="rounded-lg border border-[#1e222d] px-4 py-2.5 text-[14px] text-slate-200" href="/concepts/verification/">什么是「可验证」</a>
+        <a class="rounded-lg border border-[#1e222d] px-4 py-2.5 text-[14px] text-slate-200" href="/reference/tool-contract/">工具契约</a>
+        <a class="rounded-lg border border-[#1e222d] px-4 py-2.5 text-[14px] text-slate-200" href="/en/">English</a>
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <div class="grid gap-3 sm:grid-cols-2">
+        <a class="docs-card" href="/integrate/agents/">
+          <div class="docs-card-head"><span class="docs-card-title">给 Agent 读的</span><span class="docs-tag">新</span></div>
+          <p>工具定义、返回结构、失败时该说什么，以及「不要用摘要代替 diff」这条硬规矩。</p>
+          <span class="docs-card-arrow">→</span>
+        </a>
+        <a class="docs-card" href="/concepts/verification/">
+          <div class="docs-card-head"><span class="docs-card-title">给人的验证清单</span><span class="docs-tag">推荐</span></div>
+          <p>六步复核法：交付前要什么、在哪里重算、看粒度还是看数量。</p>
+          <span class="docs-card-arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    {groups.map((g) => (
+      <section class="mt-14">
+        <h2 class="text-[17px] font-semibold text-white">{g.label}</h2>
+        <p class="mt-1 text-[13.5px] leading-7 text-slate-400">{g.desc}</p>
+        <div class="docs-cards mt-4">
+          {g.items.map((d) => (
+            <a class="docs-card" href={`/${d.id}/`}>
+              <div class="docs-card-head"><span class="docs-card-title">{d.data.title}</span></div>
+              <p>{d.data.description}</p>
+              <span class="docs-card-arrow">→</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <section class="mt-16 border-t border-[#1e222d] pt-8">
+      <p class="text-[13px] leading-7 text-slate-500">
+        这份文档的口号只有一句：<strong class="text-slate-300">写进文档的能力必须真的存在</strong>。
+        每个「开发中」标签都对应仓库里正在进行的一处改动；没有写进来、也没有标「规划」的，就是还没有。
+      </p>
+    </section>
+  </main>
+</Base>

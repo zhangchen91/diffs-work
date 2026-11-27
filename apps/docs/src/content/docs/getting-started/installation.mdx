@@ -1,0 +1,58 @@
+---
+title: 安装与本地启动
+description: clone 仓库、构建、启动本地站，三步。
+group: Start
+order: 2
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+## 前置
+
+- Node.js ≥ 22
+- pnpm ≥ 10
+
+## 克隆与安装
+
+```bash
+git clone <repo> diffs.work && cd diffs.work
+pnpm install
+```
+
+## 启动本地站（最快路径）
+
+```bash
+pnpm local          # 构建本地站 + 启动 API 服务
+# → http://127.0.0.1:5279
+```
+
+或直接用 CLI（在仓库里构建之后）：
+
+```bash
+pnpm build:cli
+node apps/cli/lib/bin.js local            # 打开本地预览
+node apps/cli/lib/bin.js inbox            # 直接进 Inbox
+node apps/cli/lib/bin.js mcp              # 作为 MCP server（stdio）
+node apps/cli/lib/bin.js diff a.md b.md   # 终端里对两份文件
+```
+
+<Callout tone="warn" title="CLI 目前还没发布到 npm。">
+请**不要**用 `npx diffs`：npm 上的 `diffs` 是另一个人的、无关的包，装下来不是这个工具。
+在正式发布之前，只有两种用法：从本仓库构建后运行（如上），或者用浏览器里的官网。
+</Callout>
+
+## 启动各站点
+
+| 站点 | 命令 | 端口 |
+|---|---|---|
+| 官网 | `pnpm dev:website` | 5180 |
+| 文档 | `pnpm dev:docs` | 5183 |
+| 本地站 | `pnpm dev:local` | 5182（`/api` 代理到 5279） |
+
+## 数据存在哪
+
+一切本地状态在 `~/.diffs/`：`diffs/<id>.json`（inbox 记录，只有路径）与 `pairs/`（临时待渲染的文件对）。
+`diffs paths` 会打印这个目录。

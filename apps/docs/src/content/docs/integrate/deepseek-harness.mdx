@@ -1,0 +1,69 @@
+---
+title: DeepSeek Harness 插件
+description: 在 DSH 里注册 diff_compare 工具、对话内差异卡片与待处理列表，让 Agent 的改动可复核。
+group: Integrate
+order: 2
+lang: zh
+---
+
+import Doc from "../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+这是 diffs.work 最完整的 Agent 接入面：一个工具、两个界面入口，装完就能用。
+
+## 它做什么
+
+| 入口 | 是什么 |
+|---|---|
+| 工具 `diff_compare` | Agent 调一次，拿到结构化 diff（hunk / 行号 / 增删改移 / 行内逐字） |
+| 对话内卡片 | 每次工具调用在对话里渲染成一张差异卡片，可以展开看行 |
+| 待处理列表 | 每次调用顺手投递一条到本地 Inbox，人集中在这里点开看 |
+
+## 安装
+
+```bash
+pnpm build:plugin                                       # 先构建出 lib/
+dsh plugin --profile <名字> add "$PWD/apps/dsh-plugin"   # 绝对路径，且必须带 --profile
+```
+
+两处都不能省：`dsh plugin` 是 pnpm 的封装，没有 `--profile` 它不知道装到哪个 profile；
+相对路径会被当成包名解析，装到别的包上。这两条都是实测出来的。
+
+`@diffs/dsh-plugin` **还没有发布到 npm**，直接 `dsh plugin add @diffs/dsh-plugin` 会 404。
+
+<Callout tone="note" title="装完先看一件事。">
+装好后在对话里让它比两个文件，你会看到一张卡片。如果只有一段文字而没有卡片，
+说明插件没有注册到当前 profile——`dsh plugin list` 里应当能看到它。
+</Callout>
+
+## 工具参数
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `old` | string | 旧文件路径 |
+| `new` | string | 新文件路径；与 `revision` 连用时可省略 |
+| `revision` | string | git 版本（如 `HEAD~1`），与工作区对比 |
+| `cwd` | string | 相对路径基准 |
+| `context` | int | hunk 上下文行数（默认 3） |
+| `maxHunks` | int | hunk 上限（默认 40） |
+| `format` | `json` \| `unified` | 输出形态 |
+
+返回的结构见 [portable@1](/reference/portable/)。二进制族（Office / PDF）会给出族信息，
+不会把几十 MB 塞进一次工具调用。
+
+## 配套的命令
+
+| 命令 | 做什么 |
+|---|---|
+| `/diff-open` | 在本地站打开最近一次对比 |
+| `/diff-last` | 对比「上一轮改动」 |
+
+## 让 Agent 用好它
+
+把 [给 Agent 读的说明](/integrate/agents/) 那一页放进 instructions：什么时候调用、四条规矩、
+以及「不要用摘要代替 diff」这条硬要求。
+
+## 状态
+
+**已上线**。源码在 `apps/dsh-plugin/`（开源）。**尚未发布到 npm**，从仓库构建后以本地路径安装。

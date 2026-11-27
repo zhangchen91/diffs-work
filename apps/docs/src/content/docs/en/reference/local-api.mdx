@@ -1,0 +1,20 @@
+---
+title: Local API
+description: The small JSON API diffs local exposes on 127.0.0.1:5279.
+group: Reference
+order: 2
+lang: en
+---
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/health` | `{ ok, version, cwd }` |
+| GET/POST | `/api/diff` | Compare (see the contract) |
+| GET | `/api/file?path=` | Read one file by path |
+| GET | `/api/inbox` | Recent comparisons |
+| POST | `/api/inbox` | Add a record |
+| POST | `/api/open` | Add a record, return `{ id, url }` |
+| POST | `/api/pair` | Stage a pair (base64), return an id |
+| GET | `/api/pair/<id>/config` | A `diff.json` for the legacy renderer |
+
+Loopback only; file contents are never copied; everything lives in `~/.diffs/`.

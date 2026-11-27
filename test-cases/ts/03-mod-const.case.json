@@ -1,0 +1,16 @@
+{
+  "name": "03-mod-const",
+  "kind": "ts",
+  "before": "03-mod-const.ts",
+  "after": "03-mod-const.after.ts",
+  "expect": {
+    "ops": [
+      "mod"
+    ],
+    "notOps": [
+      "add",
+      "del",
+      "move"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "04-move-slide",
+  "kind": "ppt",
+  "before": "04-move-slide.before.pptx",
+  "after": "04-move-slide.after.pptx",
+  "expect": {
+    "ops": [],
+    "notOps": [
+      "add",
+      "del"
+    ]
+  },
+  "note": "两页互换顺序：幻灯片按标题配对，内容相同即无变化，不报整页增删"
+}

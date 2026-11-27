@@ -1,0 +1,12 @@
+{
+  "name": "@diffs/chrome-extension",
+  "version": "0.2.0",
+  "private": true,
+  "description": "diffs.work browser extension (MV3): right-click two links or two text selections to compare them locally.",
+  "type": "module",
+  "scripts": {
+    "build": "node ./build.mjs",
+    "pack": "node ./build.mjs --zip"
+  },
+  "license": "MIT"
+}

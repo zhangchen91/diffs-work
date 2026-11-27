@@ -1,0 +1,88 @@
+---
+title: git and jj
+description: "Wire diffs into version control: before a commit, before a merge, and when reading someone else's changes, all use the same judgements."
+group: Integrate
+order: 3
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+Version control is the most natural call site: every commit and every review is answering "what did
+this actually change". diffs.work does not replace git; it only adds **a readable, recomputable layer
+of judgement** on top of git's output.
+
+## git difftool
+
+Register diffs as an external tool:
+
+> Below, `diffs <command>` means the CLI. It is **not on npm yet**, so run `pnpm build:cli` first
+> and replace `diffs` with `node apps/cli/lib/bin.js`.
+
+```bash
+git config --global difftool.diffs.cmd 'node apps/cli/lib/bin.js diff --open "$LOCAL" "$REMOTE"'
+git config --global difftool.prompt false
+git config --global diff.tool diffs
+
+git difftool              # working tree vs HEAD
+git difftool HEAD~3       # combined diff of the last three commits
+git difftool --dir-diff   # directory-level comparison: only files with differences are handled
+```
+
+- `"$LOCAL"` / `"$REMOTE"` are the two temporary file paths git hands to the external tool;
+- `--open` opens the result in the local site (`diffs local` must be running);
+- add `--no-prompt` to skip confirming each file.
+
+<Callout tone="note" title="Why not 'a wrapper around git's diff'.">
+Wrapping git's text output can only see what git has already thrown away (which lines formed one
+"edit" is unrecoverable). Here we get the two **files**, and diffs makes the judgement itself — which
+is why it can report "edits" and "moves".
+</Callout>
+
+## Reviewing before a merge
+
+```bash
+# every change on the current branch relative to the trunk, run only on files with differences
+git diff --name-only origin/main... | xargs -r -n2 sh -c 'diffs diff --open "$0" "$1"'
+```
+
+You can also capture the result in CI as a record (`--json` output is described in
+[portable@1](/en/reference/portable/)):
+
+```bash
+diffs diff a.ts b.ts --json | jq '.counts'
+```
+
+## jj
+
+jj's diff-formatter protocol requires an external program to **read a unified diff on stdin and print
+coloured text**, so it needs an entry point that "reads a patch from stdin" rather than running the
+kernel directly.
+
+```bash
+jj config set --user ui.diff-formatter diffs
+```
+
+<Callout tone="warn" title="Status: planned.">
+This is **not implemented yet**; writing the configuration will fail because no executable is found.
+The plan is to add the `diffs render-diff` subcommand first, then come back and turn these two lines
+into a working configuration.
+</Callout>
+
+## How it differs from git's built-in diff
+
+| | `git diff` | diffs.work |
+|---|---|---|
+| Line-level additions and deletions | ✅ | ✅ |
+| One "edit" vs "delete + add" | ❌ (only `-` and `+`) | ✅ |
+| In-line pinpointing to exact characters | ⚠️ only word-diff, and in another mode | ✅ from the same source as the judgement |
+| Whole-block moves | ❌ | ✅ (granularity on the [code page](/en/formats/code/)) |
+| Office / PDF | ❌ (binary) | ✅ |
+| A shareable browser view | ❌ | ✅ |
+
+## Related
+
+- [How code comparison decides](/en/formats/code/) — the rules for "edit" and "move"
+- [CLI and local site](/en/integrate/cli/) — full usage of the `diffs` command

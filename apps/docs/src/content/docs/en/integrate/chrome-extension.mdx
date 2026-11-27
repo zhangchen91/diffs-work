@@ -1,0 +1,59 @@
+---
+title: Browser extension
+description: Right-click two files to open them in the local viewer, or send a page selection to the compare page.
+group: Integrate
+order: 2
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+## What it does
+
+- Select two passages on a page and right-click **“Compare selection with diffs.work”** — the compare page opens with a local Blob; nothing is uploaded.
+- Right-click a link to **send it to diffs.work** — recorded in the local inbox (`127.0.0.1:5279`).
+- The toolbar popup takes two local files and opens `diffs.work/#/compare`.
+
+## What it calls
+
+The extension puts the two pieces of content into exchange storage and opens
+`https://diffs.work/#/compare?pair=<id>`. The page asks for them with `postMessage` and then takes
+**exactly the same** path as a manual drag-and-drop:
+
+```js
+window.postMessage({ type: "diffs-work:pair:request", id }, "*");
+// the page replies: postMessage({ type: "diffs-work:pair:response", id, pair })
+```
+
+<Callout tone="note" title="Why postMessage and not a URL parameter.">
+URLs have a length limit, and a contract or a source file passes a few kilobytes easily. Exchanging
+an id keeps the content moving only between your storage and the page.
+</Callout>
+
+## Install (unpacked, for development)
+
+1. Open `chrome://extensions` in Chrome or Edge
+2. Turn on Developer mode
+3. “Load unpacked” → pick `apps/chrome-extension/dist` (build it first with
+   `pnpm --filter @diffs/chrome-extension build`)
+
+## Permissions
+
+`contextMenus` (the menu), `storage` (remember the two items), `activeTab`, `unlimitedStorage`, and
+`host_permissions: <all_urls>`.
+
+That last one is broad and is stated plainly: a content script whose `matches` is `<all_urls>` still
+needs its injection origin covered by host permissions, and the previous value — `http://127.0.0.1/*`
+— does not cover a ported origin like `:5199`. The extension therefore did nothing at all on a dev
+server, silently. The extension makes no third-party requests; the permission is what lets it draw
+in the page you are already on.
+
+## Status
+
+**Shipped**, and verified: the panel draws into the page you are on (see the screenshot in the
+release notes), with the caveat recorded above — `<all_urls>` is a broad host permission, and it is
+what makes the panel possible. The source is in `apps/chrome-extension/` (open), sharing the same
+contract as the
+site, the plugin and the CLI. It is not in a store yet: build it and load the unpacked directory.

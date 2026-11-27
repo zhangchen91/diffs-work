@@ -1,0 +1,29 @@
+---
+title: Compare on the website
+description: No install — drag two files in and compare. Text families work right away.
+group: Concepts
+order: 1
+lang: en
+---
+
+## How
+
+1. Open https://diffs.work/#/compare
+2. Drop two files into the left and right boxes (or press “Choose”)
+3. Read the differences; export them as `.diff`
+
+## What it can compare today
+
+| Family | Engine | Result |
+|---|---|---|
+| Markdown | md-ast | Block-level plus inline (sentence and number) highlights; table rows align |
+| Plain text / CSV / config | text-core | Line diff with a word-level fallback |
+| Code | code-ast | Comments and strings kept apart; added, removed and changed symbols |
+| Excel | xlsx-core | Sheets aligned by name and rename, cell-level changes, formula edits |
+| XML / OOXML | core-xml | Element-path comparison with attribute changes counted separately |
+| Word / PPT / PDF | rules-core.wasm / pdf.js | Rendered in the page itself |
+
+## Language
+
+The interface ships in Simplified Chinese and English. Switch in the top right; you choice is remembered.
+To add a language see `packages/i18n`.

@@ -1,0 +1,12 @@
+{
+  "name": "04-move",
+  "kind": "word",
+  "before": "04-move.before.docx",
+  "after": "04-move.after.docx",
+  "expect": {
+    "ops": [
+      "move"
+    ],
+    "notOps": []
+  }
+}

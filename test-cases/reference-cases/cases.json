@@ -1,0 +1,967 @@
+[
+ {
+  "id": "sym-typescript-move",
+  "language": "typescript",
+  "file": "calc.ts",
+  "title": "a method moved: the method",
+  "old": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-typescript-edit",
+  "language": "typescript",
+  "file": "calc.ts",
+  "title": "an edit inside one method: the method",
+  "old": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 20;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-typescript-added-two",
+  "language": "typescript",
+  "file": "calc.ts",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  four(a: number): number {\n    const b4 = a * 4;\n    const c4 = b4 + 4;\n    return c4 - 1;\n  }\n\n  five(a: number): number {\n    const b5 = a * 5;\n    const c5 = b5 + 5;\n    return c5 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-typescript-statements-across",
+  "language": "typescript",
+  "file": "calc.ts",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "export class Calc {\n  one(a: number): number {\n    const alphaValue = a * 7 + 10;\n    const betaValueTwo = a * 7 + 12;\n    const gammaValueThree = a * 7 + 15;\n    const deltaValueFour = a * 7 + 14;\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const alphaValue = a * 7 + 10;\n    const betaValueTwo = a * 7 + 12;\n    const gammaValueThree = a * 7 + 15;\n    const deltaValueFour = a * 7 + 14;\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-tsx-move",
+  "language": "tsx",
+  "file": "calc.tsx",
+  "title": "a method moved: the method",
+  "old": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-tsx-edit",
+  "language": "tsx",
+  "file": "calc.tsx",
+  "title": "an edit inside one method: the method",
+  "old": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 20;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-tsx-added-two",
+  "language": "tsx",
+  "file": "calc.tsx",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  four(a: number): number {\n    const b4 = a * 4;\n    const c4 = b4 + 4;\n    return c4 - 1;\n  }\n\n  five(a: number): number {\n    const b5 = a * 5;\n    const c5 = b5 + 5;\n    return c5 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-tsx-statements-across",
+  "language": "tsx",
+  "file": "calc.tsx",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "export class Calc {\n  one(a: number): number {\n    const alphaValue = a * 7 + 10;\n    const betaValueTwo = a * 7 + 12;\n    const gammaValueThree = a * 7 + 15;\n    const deltaValueFour = a * 7 + 14;\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "new": "export class Calc {\n  one(a: number): number {\n    const b1 = a * 1;\n    const c1 = b1 + 1;\n    return c1 - 1;\n  }\n\n  two(a: number): number {\n    const b2 = a * 2;\n    const c2 = b2 + 2;\n    return c2 - 1;\n  }\n\n  three(a: number): number {\n    const alphaValue = a * 7 + 10;\n    const betaValueTwo = a * 7 + 12;\n    const gammaValueThree = a * 7 + 15;\n    const deltaValueFour = a * 7 + 14;\n    const b3 = a * 3;\n    const c3 = b3 + 3;\n    return c3 - 1;\n  }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-python-move",
+  "language": "python",
+  "file": "calc.py",
+  "title": "a method moved: the method",
+  "old": "class Calc:\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def two(self, a):\n        b2 = a * 2\n        c2 = b2 + 2\n        return c2 - 1\n\n    def three(self, a):\n        b3 = a * 3\n        c3 = b3 + 3\n        return c3 - 1\n",
+  "new": "class Calc:\n    def two(self, a):\n        b2 = a * 2\n        c2 = b2 + 2\n        return c2 - 1\n\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def three(self, a):\n        b3 = a * 3\n        c3 = b3 + 3\n        return c3 - 1\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-python-edit",
+  "language": "python",
+  "file": "calc.py",
+  "title": "an edit inside one method: the method",
+  "old": "class Calc:\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def two(self, a):\n        b2 = a * 2\n        c2 = b2 + 2\n        return c2 - 1\n\n    def three(self, a):\n        b3 = a * 3\n        c3 = b3 + 3\n        return c3 - 1\n",
+  "new": "class Calc:\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def two(self, a):\n        b2 = a * 2\n        c2 = b2 + 20\n        return c2 - 1\n\n    def three(self, a):\n        b3 = a * 3\n        c3 = b3 + 3\n        return c3 - 1\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-python-added-two",
+  "language": "python",
+  "file": "calc.py",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "class Calc:\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n",
+  "new": "class Calc:\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def four(self, a):\n        b4 = a * 4\n        c4 = b4 + 4\n        return c4 - 1\n\n    def five(self, a):\n        b5 = a * 5\n        c5 = b5 + 5\n        return c5 - 1\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-python-statements-across",
+  "language": "python",
+  "file": "calc.py",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "class Calc:\n    def one(self, a):\n        alphaValue = a * 7 + 10\n        betaValueTwo = a * 7 + 12\n        gammaValueThree = a * 7 + 15\n        deltaValueFour = a * 7 + 14\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def two(self, a):\n        b2 = a * 2\n        c2 = b2 + 2\n        return c2 - 1\n\n    def three(self, a):\n        b3 = a * 3\n        c3 = b3 + 3\n        return c3 - 1\n",
+  "new": "class Calc:\n    def one(self, a):\n        b1 = a * 1\n        c1 = b1 + 1\n        return c1 - 1\n\n    def two(self, a):\n        b2 = a * 2\n        c2 = b2 + 2\n        return c2 - 1\n\n    def three(self, a):\n        alphaValue = a * 7 + 10\n        betaValueTwo = a * 7 + 12\n        gammaValueThree = a * 7 + 15\n        deltaValueFour = a * 7 + 14\n        b3 = a * 3\n        c3 = b3 + 3\n        return c3 - 1\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-go-move",
+  "language": "go",
+  "file": "calc.go",
+  "title": "a method moved: the method",
+  "old": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) two(a int) int {\n\tb2 := a * 2\n\tc2 := b2 + 2\n\treturn c2 - 1\n}\n\nfunc (c *Calc) three(a int) int {\n\tb3 := a * 3\n\tc3 := b3 + 3\n\treturn c3 - 1\n}\n",
+  "new": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) two(a int) int {\n\tb2 := a * 2\n\tc2 := b2 + 2\n\treturn c2 - 1\n}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) three(a int) int {\n\tb3 := a * 3\n\tc3 := b3 + 3\n\treturn c3 - 1\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-go-edit",
+  "language": "go",
+  "file": "calc.go",
+  "title": "an edit inside one method: the method",
+  "old": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) two(a int) int {\n\tb2 := a * 2\n\tc2 := b2 + 2\n\treturn c2 - 1\n}\n\nfunc (c *Calc) three(a int) int {\n\tb3 := a * 3\n\tc3 := b3 + 3\n\treturn c3 - 1\n}\n",
+  "new": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) two(a int) int {\n\tb2 := a * 2\n\tc2 := b2 + 20\n\treturn c2 - 1\n}\n\nfunc (c *Calc) three(a int) int {\n\tb3 := a * 3\n\tc3 := b3 + 3\n\treturn c3 - 1\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-go-added-two",
+  "language": "go",
+  "file": "calc.go",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n",
+  "new": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) four(a int) int {\n\tb4 := a * 4\n\tc4 := b4 + 4\n\treturn c4 - 1\n}\n\nfunc (c *Calc) five(a int) int {\n\tb5 := a * 5\n\tc5 := b5 + 5\n\treturn c5 - 1\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-go-statements-across",
+  "language": "go",
+  "file": "calc.go",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\talphaValue := a * 7 + 10\n\t_ = alphaValue\n\tbetaValueTwo := a * 7 + 12\n\t_ = betaValueTwo\n\tgammaValueThree := a * 7 + 15\n\t_ = gammaValueThree\n\tdeltaValueFour := a * 7 + 14\n\t_ = deltaValueFour\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) two(a int) int {\n\tb2 := a * 2\n\tc2 := b2 + 2\n\treturn c2 - 1\n}\n\nfunc (c *Calc) three(a int) int {\n\tb3 := a * 3\n\tc3 := b3 + 3\n\treturn c3 - 1\n}\n",
+  "new": "package calc\n\ntype Calc struct{}\n\nfunc (c *Calc) one(a int) int {\n\tb1 := a * 1\n\tc1 := b1 + 1\n\treturn c1 - 1\n}\n\nfunc (c *Calc) two(a int) int {\n\tb2 := a * 2\n\tc2 := b2 + 2\n\treturn c2 - 1\n}\n\nfunc (c *Calc) three(a int) int {\n\talphaValue := a * 7 + 10\n\t_ = alphaValue\n\tbetaValueTwo := a * 7 + 12\n\t_ = betaValueTwo\n\tgammaValueThree := a * 7 + 15\n\t_ = gammaValueThree\n\tdeltaValueFour := a * 7 + 14\n\t_ = deltaValueFour\n\tb3 := a * 3\n\tc3 := b3 + 3\n\treturn c3 - 1\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-rust-move",
+  "language": "rust",
+  "file": "calc.rs",
+  "title": "a method moved: the method",
+  "old": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn two(&self, a: i32) -> i32 {\n        let b2 = a * 2;\n        let c2 = b2 + 2;\n        c2 - 1\n    }\n\n    fn three(&self, a: i32) -> i32 {\n        let b3 = a * 3;\n        let c3 = b3 + 3;\n        c3 - 1\n    }\n}\n",
+  "new": "struct Calc;\n\nimpl Calc {\n    fn two(&self, a: i32) -> i32 {\n        let b2 = a * 2;\n        let c2 = b2 + 2;\n        c2 - 1\n    }\n\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn three(&self, a: i32) -> i32 {\n        let b3 = a * 3;\n        let c3 = b3 + 3;\n        c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-rust-edit",
+  "language": "rust",
+  "file": "calc.rs",
+  "title": "an edit inside one method: the method",
+  "old": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn two(&self, a: i32) -> i32 {\n        let b2 = a * 2;\n        let c2 = b2 + 2;\n        c2 - 1\n    }\n\n    fn three(&self, a: i32) -> i32 {\n        let b3 = a * 3;\n        let c3 = b3 + 3;\n        c3 - 1\n    }\n}\n",
+  "new": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn two(&self, a: i32) -> i32 {\n        let b2 = a * 2;\n        let c2 = b2 + 20;\n        c2 - 1\n    }\n\n    fn three(&self, a: i32) -> i32 {\n        let b3 = a * 3;\n        let c3 = b3 + 3;\n        c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-rust-added-two",
+  "language": "rust",
+  "file": "calc.rs",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n}\n",
+  "new": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn four(&self, a: i32) -> i32 {\n        let b4 = a * 4;\n        let c4 = b4 + 4;\n        c4 - 1\n    }\n\n    fn five(&self, a: i32) -> i32 {\n        let b5 = a * 5;\n        let c5 = b5 + 5;\n        c5 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-rust-statements-across",
+  "language": "rust",
+  "file": "calc.rs",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let alphaValue = a * 7 + 10;\n        let betaValueTwo = a * 7 + 12;\n        let gammaValueThree = a * 7 + 15;\n        let deltaValueFour = a * 7 + 14;\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn two(&self, a: i32) -> i32 {\n        let b2 = a * 2;\n        let c2 = b2 + 2;\n        c2 - 1\n    }\n\n    fn three(&self, a: i32) -> i32 {\n        let b3 = a * 3;\n        let c3 = b3 + 3;\n        c3 - 1\n    }\n}\n",
+  "new": "struct Calc;\n\nimpl Calc {\n    fn one(&self, a: i32) -> i32 {\n        let b1 = a * 1;\n        let c1 = b1 + 1;\n        c1 - 1\n    }\n\n    fn two(&self, a: i32) -> i32 {\n        let b2 = a * 2;\n        let c2 = b2 + 2;\n        c2 - 1\n    }\n\n    fn three(&self, a: i32) -> i32 {\n        let alphaValue = a * 7 + 10;\n        let betaValueTwo = a * 7 + 12;\n        let gammaValueThree = a * 7 + 15;\n        let deltaValueFour = a * 7 + 14;\n        let b3 = a * 3;\n        let c3 = b3 + 3;\n        c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-java-move",
+  "language": "java",
+  "file": "Calc.java",
+  "title": "a method moved: the method",
+  "old": "class Calc {\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a) {\n        int b2 = a * 2;\n        int c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a) {\n        int b3 = a * 3;\n        int c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "new": "class Calc {\n    int two(int a) {\n        int b2 = a * 2;\n        int c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int three(int a) {\n        int b3 = a * 3;\n        int c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-java-edit",
+  "language": "java",
+  "file": "Calc.java",
+  "title": "an edit inside one method: the method",
+  "old": "class Calc {\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a) {\n        int b2 = a * 2;\n        int c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a) {\n        int b3 = a * 3;\n        int c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "new": "class Calc {\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a) {\n        int b2 = a * 2;\n        int c2 = b2 + 20;\n        return c2 - 1;\n    }\n\n    int three(int a) {\n        int b3 = a * 3;\n        int c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-java-added-two",
+  "language": "java",
+  "file": "Calc.java",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "class Calc {\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n}\n",
+  "new": "class Calc {\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int four(int a) {\n        int b4 = a * 4;\n        int c4 = b4 + 4;\n        return c4 - 1;\n    }\n\n    int five(int a) {\n        int b5 = a * 5;\n        int c5 = b5 + 5;\n        return c5 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-java-statements-across",
+  "language": "java",
+  "file": "Calc.java",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "class Calc {\n    int one(int a) {\n        int alphaValue = a * 7 + 10;\n        int betaValueTwo = a * 7 + 12;\n        int gammaValueThree = a * 7 + 15;\n        int deltaValueFour = a * 7 + 14;\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a) {\n        int b2 = a * 2;\n        int c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a) {\n        int b3 = a * 3;\n        int c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "new": "class Calc {\n    int one(int a) {\n        int b1 = a * 1;\n        int c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a) {\n        int b2 = a * 2;\n        int c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a) {\n        int alphaValue = a * 7 + 10;\n        int betaValueTwo = a * 7 + 12;\n        int gammaValueThree = a * 7 + 15;\n        int deltaValueFour = a * 7 + 14;\n        int b3 = a * 3;\n        int c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-csharp-move",
+  "language": "csharp",
+  "file": "Calc.cs",
+  "title": "a method moved: the method",
+  "old": "class Calc\n{\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a)\n    {\n        var b2 = a * 2;\n        var c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a)\n    {\n        var b3 = a * 3;\n        var c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "new": "class Calc\n{\n    int two(int a)\n    {\n        var b2 = a * 2;\n        var c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int three(int a)\n    {\n        var b3 = a * 3;\n        var c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-csharp-edit",
+  "language": "csharp",
+  "file": "Calc.cs",
+  "title": "an edit inside one method: the method",
+  "old": "class Calc\n{\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a)\n    {\n        var b2 = a * 2;\n        var c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a)\n    {\n        var b3 = a * 3;\n        var c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "new": "class Calc\n{\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a)\n    {\n        var b2 = a * 2;\n        var c2 = b2 + 20;\n        return c2 - 1;\n    }\n\n    int three(int a)\n    {\n        var b3 = a * 3;\n        var c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-csharp-added-two",
+  "language": "csharp",
+  "file": "Calc.cs",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "class Calc\n{\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n}\n",
+  "new": "class Calc\n{\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int four(int a)\n    {\n        var b4 = a * 4;\n        var c4 = b4 + 4;\n        return c4 - 1;\n    }\n\n    int five(int a)\n    {\n        var b5 = a * 5;\n        var c5 = b5 + 5;\n        return c5 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-csharp-statements-across",
+  "language": "csharp",
+  "file": "Calc.cs",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "class Calc\n{\n    int one(int a)\n    {\n        var alphaValue = a * 7 + 10;\n        var betaValueTwo = a * 7 + 12;\n        var gammaValueThree = a * 7 + 15;\n        var deltaValueFour = a * 7 + 14;\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a)\n    {\n        var b2 = a * 2;\n        var c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a)\n    {\n        var b3 = a * 3;\n        var c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "new": "class Calc\n{\n    int one(int a)\n    {\n        var b1 = a * 1;\n        var c1 = b1 + 1;\n        return c1 - 1;\n    }\n\n    int two(int a)\n    {\n        var b2 = a * 2;\n        var c2 = b2 + 2;\n        return c2 - 1;\n    }\n\n    int three(int a)\n    {\n        var alphaValue = a * 7 + 10;\n        var betaValueTwo = a * 7 + 12;\n        var gammaValueThree = a * 7 + 15;\n        var deltaValueFour = a * 7 + 14;\n        var b3 = a * 3;\n        var c3 = b3 + 3;\n        return c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-php-move",
+  "language": "php",
+  "file": "Calc.php",
+  "title": "a method moved: the method",
+  "old": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function two($a)\n    {\n        $b2 = $a * 2;\n        $c2 = $b2 + 2;\n        return $c2 - 1;\n    }\n\n    public function three($a)\n    {\n        $b3 = $a * 3;\n        $c3 = $b3 + 3;\n        return $c3 - 1;\n    }\n}\n",
+  "new": "<?php\nclass Calc\n{\n    public function two($a)\n    {\n        $b2 = $a * 2;\n        $c2 = $b2 + 2;\n        return $c2 - 1;\n    }\n\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function three($a)\n    {\n        $b3 = $a * 3;\n        $c3 = $b3 + 3;\n        return $c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-php-edit",
+  "language": "php",
+  "file": "Calc.php",
+  "title": "an edit inside one method: the method",
+  "old": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function two($a)\n    {\n        $b2 = $a * 2;\n        $c2 = $b2 + 2;\n        return $c2 - 1;\n    }\n\n    public function three($a)\n    {\n        $b3 = $a * 3;\n        $c3 = $b3 + 3;\n        return $c3 - 1;\n    }\n}\n",
+  "new": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function two($a)\n    {\n        $b2 = $a * 2;\n        $c2 = $b2 + 20;\n        return $c2 - 1;\n    }\n\n    public function three($a)\n    {\n        $b3 = $a * 3;\n        $c3 = $b3 + 3;\n        return $c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-php-added-two",
+  "language": "php",
+  "file": "Calc.php",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n}\n",
+  "new": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function four($a)\n    {\n        $b4 = $a * 4;\n        $c4 = $b4 + 4;\n        return $c4 - 1;\n    }\n\n    public function five($a)\n    {\n        $b5 = $a * 5;\n        $c5 = $b5 + 5;\n        return $c5 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-php-statements-across",
+  "language": "php",
+  "file": "Calc.php",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $alphaValue = $a * 7 + 10;\n        $betaValueTwo = $a * 7 + 12;\n        $gammaValueThree = $a * 7 + 15;\n        $deltaValueFour = $a * 7 + 14;\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function two($a)\n    {\n        $b2 = $a * 2;\n        $c2 = $b2 + 2;\n        return $c2 - 1;\n    }\n\n    public function three($a)\n    {\n        $b3 = $a * 3;\n        $c3 = $b3 + 3;\n        return $c3 - 1;\n    }\n}\n",
+  "new": "<?php\nclass Calc\n{\n    public function one($a)\n    {\n        $b1 = $a * 1;\n        $c1 = $b1 + 1;\n        return $c1 - 1;\n    }\n\n    public function two($a)\n    {\n        $b2 = $a * 2;\n        $c2 = $b2 + 2;\n        return $c2 - 1;\n    }\n\n    public function three($a)\n    {\n        $alphaValue = $a * 7 + 10;\n        $betaValueTwo = $a * 7 + 12;\n        $gammaValueThree = $a * 7 + 15;\n        $deltaValueFour = $a * 7 + 14;\n        $b3 = $a * 3;\n        $c3 = $b3 + 3;\n        return $c3 - 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-ruby-move",
+  "language": "ruby",
+  "file": "calc.rb",
+  "title": "a method moved: the method",
+  "old": "class Calc\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def two(a)\n    b2 = a * 2\n    c2 = b2 + 2\n    c2 - 1\n  end\n\n  def three(a)\n    b3 = a * 3\n    c3 = b3 + 3\n    c3 - 1\n  end\nend\n",
+  "new": "class Calc\n  def two(a)\n    b2 = a * 2\n    c2 = b2 + 2\n    c2 - 1\n  end\n\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def three(a)\n    b3 = a * 3\n    c3 = b3 + 3\n    c3 - 1\n  end\nend\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-ruby-edit",
+  "language": "ruby",
+  "file": "calc.rb",
+  "title": "an edit inside one method: the method",
+  "old": "class Calc\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def two(a)\n    b2 = a * 2\n    c2 = b2 + 2\n    c2 - 1\n  end\n\n  def three(a)\n    b3 = a * 3\n    c3 = b3 + 3\n    c3 - 1\n  end\nend\n",
+  "new": "class Calc\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def two(a)\n    b2 = a * 2\n    c2 = b2 + 20\n    c2 - 1\n  end\n\n  def three(a)\n    b3 = a * 3\n    c3 = b3 + 3\n    c3 - 1\n  end\nend\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-ruby-added-two",
+  "language": "ruby",
+  "file": "calc.rb",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "class Calc\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\nend\n",
+  "new": "class Calc\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def four(a)\n    b4 = a * 4\n    c4 = b4 + 4\n    c4 - 1\n  end\n\n  def five(a)\n    b5 = a * 5\n    c5 = b5 + 5\n    c5 - 1\n  end\nend\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-ruby-statements-across",
+  "language": "ruby",
+  "file": "calc.rb",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "class Calc\n  def one(a)\n    alphaValue = a * 7 + 10\n    betaValueTwo = a * 7 + 12\n    gammaValueThree = a * 7 + 15\n    deltaValueFour = a * 7 + 14\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def two(a)\n    b2 = a * 2\n    c2 = b2 + 2\n    c2 - 1\n  end\n\n  def three(a)\n    b3 = a * 3\n    c3 = b3 + 3\n    c3 - 1\n  end\nend\n",
+  "new": "class Calc\n  def one(a)\n    b1 = a * 1\n    c1 = b1 + 1\n    c1 - 1\n  end\n\n  def two(a)\n    b2 = a * 2\n    c2 = b2 + 2\n    c2 - 1\n  end\n\n  def three(a)\n    alphaValue = a * 7 + 10\n    betaValueTwo = a * 7 + 12\n    gammaValueThree = a * 7 + 15\n    deltaValueFour = a * 7 + 14\n    b3 = a * 3\n    c3 = b3 + 3\n    c3 - 1\n  end\nend\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-move",
+  "language": "kotlin",
+  "file": "Calc.kt",
+  "title": "a method moved: the method",
+  "old": "class Calc {\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun two(a: Int): Int {\n        val b2 = a * 2\n        val c2 = b2 + 2\n        return c2 - 1\n    }\n\n    fun three(a: Int): Int {\n        val b3 = a * 3\n        val c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "new": "class Calc {\n    fun two(a: Int): Int {\n        val b2 = a * 2\n        val c2 = b2 + 2\n        return c2 - 1\n    }\n\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun three(a: Int): Int {\n        val b3 = a * 3\n        val c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-edit",
+  "language": "kotlin",
+  "file": "Calc.kt",
+  "title": "an edit inside one method: the method",
+  "old": "class Calc {\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun two(a: Int): Int {\n        val b2 = a * 2\n        val c2 = b2 + 2\n        return c2 - 1\n    }\n\n    fun three(a: Int): Int {\n        val b3 = a * 3\n        val c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "new": "class Calc {\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun two(a: Int): Int {\n        val b2 = a * 2\n        val c2 = b2 + 20\n        return c2 - 1\n    }\n\n    fun three(a: Int): Int {\n        val b3 = a * 3\n        val c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-added-two",
+  "language": "kotlin",
+  "file": "Calc.kt",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "class Calc {\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n}\n",
+  "new": "class Calc {\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun four(a: Int): Int {\n        val b4 = a * 4\n        val c4 = b4 + 4\n        return c4 - 1\n    }\n\n    fun five(a: Int): Int {\n        val b5 = a * 5\n        val c5 = b5 + 5\n        return c5 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-statements-across",
+  "language": "kotlin",
+  "file": "Calc.kt",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "class Calc {\n    fun one(a: Int): Int {\n        val alphaValue = a * 7 + 10\n        val betaValueTwo = a * 7 + 12\n        val gammaValueThree = a * 7 + 15\n        val deltaValueFour = a * 7 + 14\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun two(a: Int): Int {\n        val b2 = a * 2\n        val c2 = b2 + 2\n        return c2 - 1\n    }\n\n    fun three(a: Int): Int {\n        val b3 = a * 3\n        val c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "new": "class Calc {\n    fun one(a: Int): Int {\n        val b1 = a * 1\n        val c1 = b1 + 1\n        return c1 - 1\n    }\n\n    fun two(a: Int): Int {\n        val b2 = a * 2\n        val c2 = b2 + 2\n        return c2 - 1\n    }\n\n    fun three(a: Int): Int {\n        val alphaValue = a * 7 + 10\n        val betaValueTwo = a * 7 + 12\n        val gammaValueThree = a * 7 + 15\n        val deltaValueFour = a * 7 + 14\n        val b3 = a * 3\n        val c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-swift-move",
+  "language": "swift",
+  "file": "Calc.swift",
+  "title": "a method moved: the method",
+  "old": "struct Calc {\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func two(a: Int) -> Int {\n        let b2 = a * 2\n        let c2 = b2 + 2\n        return c2 - 1\n    }\n\n    func three(a: Int) -> Int {\n        let b3 = a * 3\n        let c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "new": "struct Calc {\n    func two(a: Int) -> Int {\n        let b2 = a * 2\n        let c2 = b2 + 2\n        return c2 - 1\n    }\n\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func three(a: Int) -> Int {\n        let b3 = a * 3\n        let c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-swift-edit",
+  "language": "swift",
+  "file": "Calc.swift",
+  "title": "an edit inside one method: the method",
+  "old": "struct Calc {\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func two(a: Int) -> Int {\n        let b2 = a * 2\n        let c2 = b2 + 2\n        return c2 - 1\n    }\n\n    func three(a: Int) -> Int {\n        let b3 = a * 3\n        let c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "new": "struct Calc {\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func two(a: Int) -> Int {\n        let b2 = a * 2\n        let c2 = b2 + 20\n        return c2 - 1\n    }\n\n    func three(a: Int) -> Int {\n        let b3 = a * 3\n        let c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-swift-added-two",
+  "language": "swift",
+  "file": "Calc.swift",
+  "title": "two methods added in one block: no symbol (siblings)",
+  "old": "struct Calc {\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n}\n",
+  "new": "struct Calc {\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func four(a: Int) -> Int {\n        let b4 = a * 4\n        let c4 = b4 + 4\n        return c4 - 1\n    }\n\n    func five(a: Int) -> Int {\n        let b5 = a * 5\n        let c5 = b5 + 5\n        return c5 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-swift-statements-across",
+  "language": "swift",
+  "file": "Calc.swift",
+  "title": "statements moved from one method into another: no symbol (ambiguous)",
+  "old": "struct Calc {\n    func one(a: Int) -> Int {\n        let alphaValue = a * 7 + 10\n        let betaValueTwo = a * 7 + 12\n        let gammaValueThree = a * 7 + 15\n        let deltaValueFour = a * 7 + 14\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func two(a: Int) -> Int {\n        let b2 = a * 2\n        let c2 = b2 + 2\n        return c2 - 1\n    }\n\n    func three(a: Int) -> Int {\n        let b3 = a * 3\n        let c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "new": "struct Calc {\n    func one(a: Int) -> Int {\n        let b1 = a * 1\n        let c1 = b1 + 1\n        return c1 - 1\n    }\n\n    func two(a: Int) -> Int {\n        let b2 = a * 2\n        let c2 = b2 + 2\n        return c2 - 1\n    }\n\n    func three(a: Int) -> Int {\n        let alphaValue = a * 7 + 10\n        let betaValueTwo = a * 7 + 12\n        let gammaValueThree = a * 7 + 15\n        let deltaValueFour = a * 7 + 14\n        let b3 = a * 3\n        let c3 = b3 + 3\n        return c3 - 1\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": null
+   },
+   {
+    "type": "movedWithEdit",
+    "symbol": null
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-fun-top",
+  "language": "kotlin",
+  "file": "a.kt",
+  "title": "Kotlin: a top-level fun moved: function",
+  "old": "fun alpha(a: Int): Int {\n    val b = a * 2\n    return b + 1\n}\n\nfun beta(a: Int): Int {\n    val c = a * 3\n    return c + 2\n}\n\nfun gamma(a: Int): Int {\n    val d = a * 4\n    return d + 3\n}\n",
+  "new": "fun beta(a: Int): Int {\n    val c = a * 3\n    return c + 2\n}\n\nfun alpha(a: Int): Int {\n    val b = a * 2\n    return b + 1\n}\n\nfun gamma(a: Int): Int {\n    val d = a * 4\n    return d + 3\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "beta",
+     "kind": "function"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-object",
+  "language": "kotlin",
+  "file": "a.kt",
+  "title": "Kotlin: an object reflowed: class",
+  "old": "object Defaults {\n    const val PORT = 8080\n}\n",
+  "new": "object Defaults { const val PORT = 8080 }\n",
+  "expect": [
+   {
+    "type": "reformatted",
+    "symbol": {
+     "name": "Defaults",
+     "kind": "class"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-extension",
+  "language": "kotlin",
+  "file": "a.kt",
+  "title": "Kotlin: an extension function added: function, container is the receiver",
+  "old": "fun a() = 1\n",
+  "new": "fun a() = 1\n\nfun String.shout(): String {\n    val loud = uppercase()\n    return loud + \"!\"\n}\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": {
+     "name": "shout",
+     "kind": "function",
+     "container": "String"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-kotlin-companion",
+  "language": "kotlin",
+  "file": "a.kt",
+  "title": "Kotlin: a method moved inside the companion: method in Calc.Companion",
+  "old": "class Calc {\n    companion object {\n        fun one(a: Int): Int {\n            val b = a * 2\n            return b + 1\n        }\n\n        fun two(a: Int): Int {\n            val c = a * 3\n            return c + 2\n        }\n\n        fun three(a: Int): Int {\n            val d = a * 4\n            return d + 3\n        }\n    }\n}\n",
+  "new": "class Calc {\n    companion object {\n        fun two(a: Int): Int {\n            val c = a * 3\n            return c + 2\n        }\n\n        fun one(a: Int): Int {\n            val b = a * 2\n            return b + 1\n        }\n\n        fun three(a: Int): Int {\n            val d = a * 4\n            return d + 3\n        }\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc.Companion"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-swift-extension",
+  "language": "swift",
+  "file": "a.swift",
+  "title": "Swift: a func moved inside an extension: method, container is the extended type",
+  "old": "extension Calc {\n    func one(a: Int) -> Int {\n        let b = a * 2\n        return b + 1\n    }\n\n    func two(a: Int) -> Int {\n        let c = a * 3\n        return c + 2\n    }\n\n    func three(a: Int) -> Int {\n        let d = a * 4\n        return d + 3\n    }\n}\n",
+  "new": "extension Calc {\n    func two(a: Int) -> Int {\n        let c = a * 3\n        return c + 2\n    }\n\n    func one(a: Int) -> Int {\n        let b = a * 2\n        return b + 1\n    }\n\n    func three(a: Int) -> Int {\n        let d = a * 4\n        return d + 3\n    }\n}\n",
+  "expect": [
+   {
+    "type": "moved",
+    "symbol": {
+     "name": "two",
+     "kind": "method",
+     "container": "Calc"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-ruby-top-def",
+  "language": "ruby",
+  "file": "a.rb",
+  "title": "Ruby: a top-level def added: function",
+  "old": "def one(a)\n  a + 1\nend\n",
+  "new": "def one(a)\n  a + 1\nend\n\ndef two(a)\n  b = a * 2\n  b + 1\nend\n",
+  "expect": [
+   {
+    "type": "added",
+    "symbol": {
+     "name": "two",
+     "kind": "function"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-python-init",
+  "language": "python",
+  "file": "a.py",
+  "title": "Python: __init__ edited: constructor",
+  "old": "class Point:\n    def __init__(self, x):\n        self.x = x\n        self.y = 0\n",
+  "new": "class Point:\n    def __init__(self, x):\n        self.x = x\n        self.y = 1\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "__init__",
+     "kind": "constructor",
+     "container": "Point"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-php-construct",
+  "language": "php",
+  "file": "a.php",
+  "title": "PHP: __construct edited: constructor",
+  "old": "<?php\nclass Point\n{\n    public function __construct($x)\n    {\n        $this->x = $x;\n        $this->y = 0;\n    }\n}\n",
+  "new": "<?php\nclass Point\n{\n    public function __construct($x)\n    {\n        $this->x = $x;\n        $this->y = 1;\n    }\n}\n",
+  "expect": [
+   {
+    "type": "edited",
+    "symbol": {
+     "name": "__construct",
+     "kind": "constructor",
+     "container": "Point"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-typescript-rename-local",
+  "language": "typescript",
+  "file": "a.ts",
+  "title": "TypeScript: a local renamed: variable, old and new name",
+  "old": "export function f(items: number[]) {\n  const total = items.length;\n  console.log(total);\n  return total;\n}\n",
+  "new": "export function f(items: number[]) {\n  const count = items.length;\n  console.log(count);\n  return count;\n}\n",
+  "expect": [
+   {
+    "type": "renamed",
+    "symbol": {
+     "name": "count",
+     "oldName": "total",
+     "kind": "variable",
+     "container": "f"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-typescript-reformat-siblings",
+  "language": "typescript",
+  "file": "a.ts",
+  "title": "TypeScript: one reformat claim per function; none spans both",
+  "old": "export function a() { return 1; }\nexport function b() { return 2; }\n",
+  "new": "export function a() {\n  return 1;\n}\nexport function b() {\n  return 2;\n}\n",
+  "expect": [
+   {
+    "type": "reformatted",
+    "symbol": {
+     "name": "a",
+     "kind": "function"
+    },
+    "newStart": 1
+   },
+   {
+    "type": "reformatted",
+    "symbol": {
+     "name": "b",
+     "kind": "function"
+    },
+    "newStart": 4
+   }
+  ]
+ },
+ {
+  "id": "sym-python-extract",
+  "language": "python",
+  "file": "a.py",
+  "title": "Python: extract: the helper",
+  "old": "def total(items):\n    s = 0\n    for i in items:\n        s += i.price * i.qty\n    tax = s * 0.2\n    return s + tax\n",
+  "new": "def subtotal(items):\n    s = 0\n    for i in items:\n        s += i.price * i.qty\n    return s\n\n\ndef total(items):\n    s = subtotal(items)\n    tax = s * 0.2\n    return s + tax\n",
+  "expect": [
+   {
+    "type": "extractedFunction",
+    "symbol": {
+     "name": "subtotal",
+     "kind": "function"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sym-typescript-rename-two-names",
+  "language": "typescript",
+  "file": "a.ts",
+  "title": "TypeScript: two names renamed on shared lines: no symbol",
+  "old": "export function f(width: number, height: number) {\n  const area = width * height;\n  return area + width + height;\n}\n",
+  "new": "export function f(w: number, h: number) {\n  const area = w * h;\n  return area + w + h;\n}\n",
+  "expect": [
+   {
+    "type": "renamed",
+    "symbol": null
+   }
+  ]
+ }
+]

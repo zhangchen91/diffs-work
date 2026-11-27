@@ -1,0 +1,60 @@
+---
+title: Office add-in
+description: "Pick two versions inside Word or Excel and compare them directly; the result appears in the task pane — without leaving the document."
+group: Integrate
+order: 6
+lang: en
+---
+
+import Doc from "../../../../components/Doc.astro";
+
+export const Callout = (p) => <Doc kind="callout" {...p} />;
+
+<Callout tone="warn" title="Status: planned.">
+This has **not been started yet**. This page sets out what it should look like, why it is worth
+building, and whether it introduces new risk. Do not configure anything based on this page.
+</Callout>
+
+## Why it is worth building
+
+The daily life of legal and investment research: a contract goes through seven revisions in Word, and
+in the end someone has to answer "what actually changed in revision seven versus revision three".
+Today the routine is to close the document, open a browser, drag two files in — not many steps, but it
+interrupts what you were doing, so many people settle for a quick glance with Word's "Compare
+Documents", which is precisely the least reliable way to read it.
+
+## How we plan to do it
+
+| Step | What happens |
+|---|---|
+| 1 | In the task pane, choose "compare with a version I saved" or "compare with another document" |
+| 2 | Use Office.js to obtain the OOXML packages of both documents (the zips behind `.docx` / `.xlsx`) |
+| 3 | Hand them to the local site (`127.0.0.1:5279`) or to this site's wasm kernel for comparison |
+| 4 | The result appears in the task pane as **a list plus navigation**: click an entry to jump to a paragraph / a cell |
+
+## Would it introduce new leak risk
+
+This is the point we want to state first: **documents will not be sent to the cloud**.
+
+- going through the local site, the document stays on your machine, and its path does not pass through
+  any third party;
+- going through the in-page kernel, the file stays in browser memory, which the network panel can
+  prove;
+- the add-in itself needs no "upload document content" permission.
+
+The minimum permissions the add-in requests are `ReadDocument` (Word) / `ReadWriteDocument` (Excel,
+only when navigation is needed).
+
+## The alternative workflow you can use today
+
+1. In Word, "Save As" the two versions (or use the historical versions in git / your cloud drive);
+2. open diffs.work and drag them in;
+3. carry the conclusions back into the document.
+
+Until the add-in ships, these three steps are already a complete, reviewable workflow — the add-in
+saves **switching cost**, not capability.
+
+## Related
+
+- [How Word comparison decides](/en/formats/word/)
+- [How Excel comparison decides](/en/formats/excel/)

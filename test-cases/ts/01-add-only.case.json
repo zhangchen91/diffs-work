@@ -1,0 +1,15 @@
+{
+  "name": "01-add-only",
+  "kind": "ts",
+  "before": "01-add-only.ts",
+  "after": "01-add-only.after.ts",
+  "expect": {
+    "ops": [
+      "add"
+    ],
+    "notOps": [
+      "del",
+      "move"
+    ]
+  }
+}

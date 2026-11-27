@@ -1,0 +1,14 @@
+{
+  "name": "06-mixed",
+  "kind": "ppt",
+  "before": "06-mixed.before.pptx",
+  "after": "06-mixed.after.pptx",
+  "expect": {
+    "ops": [
+      "add",
+      "del"
+    ],
+    "notOps": []
+  },
+  "note": "幻灯片重排未识别为移动"
+}

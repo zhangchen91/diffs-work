@@ -1,0 +1,11 @@
+# Loads diffs.work's DeepSeek Harness plugin into the profile.
+#   localUrl:  where `diffs local` listens (default http://127.0.0.1:5279)
+#   tool:      false skips registering the diff_compare agent tool
+#   commands:  false skips the /diff-* human commands
+- insert:
+    - id: diffs
+      name: '@diffs/dsh-plugin'
+      config:
+        localUrl: http://127.0.0.1:5279
+        tool: true
+        commands: true
