@@ -37,6 +37,7 @@
 | Claude Code hook | ✅ 实测：改 TS 打印 `+1/-1`；改 `.docx` 打印 `1 insertion(s)/1 deletion(s)` 与改动段落。此前把 `.docx` 当文本比，打印出一堆 zip 字节，已修（快照与临时副本必须保留扩展名） |
 | VS Code 扩展 | ❌ 仓库里没有、市场里也没有；config 页已标 `planned` |
 | 浏览器扩展 · 右键比对 | ✅ 选中两段文字右键即可比对 |
+| PDF（六族之一） | ✅ 本轮实现 CLI/MCP/插件的真比对（`+1 -1 ~1 >1`，与 `expected.json` 一致）。Web 版里 agent 改 `.pdf` 也产出了卡片载荷 `pdf · 1→1 page(s)`；那次只追加了注释、文本层未变，所以计数是 `+0 -0`，这是如实结果 |
 | 浏览器扩展 · GitHub 页内渲染 | ✅ **本轮实现并实测**：commit / compare / PR-files 页自动标注，不需要点任何东西。真实 commit `4cd3d3a` 上出现 63 处词级标记，见 `docs/evidence/A6-github-inline.png` |
 | config 页 MCP 重复 | ✅ 只剩 MCP 专区一条 |
 | 「diff_summary」 | ❌ **不存在这个工具**，`tools/list` 只返回 `diff_compare`；中英文文案已删 |
@@ -47,7 +48,7 @@
 | 项 | 为什么 |
 |---|---|
 | `bash` 改 `find -exec` 等未点名路径的文件 | 索引只看命令文本里点名的路径；全量 stat 在 82 000 文件的工作区不可接受 |
-| Claude Code mods | 本轮未做 |
+| Claude Code 的「mods / 插件」形态 | Claude Code 只提供 hook 这一个扩展点，没有可注册 UI 的 API；能做的是「终端里直接看到差异」，不是「对话卡片」。配置见 `docs/claude-code.md` |
 | `movedWithEdit` | 内核 `MoveBlock` 只带一侧 `text` |
 | VS Code 扩展 | 不存在，也没在市场里；`config` 页标 `planned` |
 | npm 发布 | `diffs` 属于别人（`synder`），无权限；文案已标注 |
