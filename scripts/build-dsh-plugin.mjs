@@ -46,6 +46,8 @@ await build({
   sourcemap: false,
   legalComments: "none",
   // schemastery is resolved at runtime from the dsh installation, never bundled
+  // Resolved at runtime from the dsh installation, never bundled: these are the harness's own
+  // service packages, and a second copy would break the single-instance services they carry.
   external: ["@deepseek-ai/schemastery"],
   logLevel: "info",
 });

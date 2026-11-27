@@ -228,3 +228,29 @@ test("the card renders two columns with line numbers and text", () => {
   assert.ok(flat.includes("  return input.trim() || null;"), "the deleted line is drawn");
   assert.ok(flat.includes("1") && flat.includes("2"), "line numbers are drawn");
 });
+
+test("an update row is split across the two columns", () => {
+  // `portable@1` writes an update as one sentence, `old → new`. Side by side that has to become
+  // the old half on the left and the new half on the right; drawing the combined text twice leaves
+  // neither column saying what that side actually contains.
+  const { mod } = load();
+  const payload = {
+    name: "a.docx",
+    hunks: [{ header: "@@", lines: [
+      { op: "mod", oldLine: 1, newLine: 1, text: "甲方应于 45 日内交付 → 甲方应于 30 日内交付" },
+    ] }],
+  };
+  const diff = mod.__internals.toDiff({ callId: "split", content: JSON.stringify(payload) });
+  const flat = [];
+  (function walk(n) {
+    if (!n) return;
+    if (Array.isArray(n)) return n.forEach(walk);
+    if (typeof n === "string") { flat.push(n); return; }
+    let kids = n.kids || [];
+    if (typeof n.type === "function") { try { const i = n.type(n.props); kids = i ? [i] : []; } catch (e) { return; } }
+    kids.forEach(walk);
+  })(mod.__internals.render(diff));
+  assert.ok(flat.includes("甲方应于 45 日内交付"), "left column keeps the old text");
+  assert.ok(flat.includes("甲方应于 30 日内交付"), "right column keeps the new text");
+  assert.ok(!flat.includes("甲方应于 45 日内交付 → 甲方应于 30 日内交付"), "the combined sentence is not drawn");
+});

@@ -61,6 +61,15 @@ export interface DiffPayload {
   };
   types?: { summary?: string; definitions?: Array<{ name: string; type?: { type: string } | null; file: string; line: number; column: number }> };
   binary?: unknown;
+  /** The same comparison as OpenUI Lang, when the result carried one. */
+  openui?: string;
+  /** `diffs.work/portable@1` when the payload came from this plugin's host half. */
+  schema?: string;
+  /** What the call did, on a card this plugin produced. */
+  operation?: string;
+  /** One changed file, for a shell command that touched several. */
+  path?: string;
+  counts?: { added: number; removed: number; changed: number; ratio: number } | null;
 }
 
 /** One comparison, as the pending list stores it. */

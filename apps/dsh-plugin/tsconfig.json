@@ -12,7 +12,13 @@
     "allowJs": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": []
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "../../node_modules/.pnpm/@types+node@22.20.7/node_modules/@types"
+    ],
+    "allowImportingTsExtensions": true
   },
   "include": [
     "src/**/*.ts"

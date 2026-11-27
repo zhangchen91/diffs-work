@@ -22,6 +22,7 @@
  */
 
 import { compareFiles, summarizeThin, toOpenUI, type CompareInput } from "@diffs/diff-tool";
+import { installCards, type CardContext } from "./cards.ts";
 import { diffsHome } from "@diffs/shared";
 
 export const name = "diffs";
@@ -33,6 +34,13 @@ export interface DiffsConfig {
   localUrl?: string;
   tool?: boolean;
   commands?: boolean;
+  /**
+   * Cover this profile's agents so every file edit renders as a diffs.work card.
+   *
+   * Defaults to true: a diff plugin whose cards only appear when a person asks for one is not an
+   * editor integration. Set `false` to keep the harness's own cards.
+   */
+  card?: boolean;
 }
 
 /** The narrow slice of the Cordis context this plugin touches. */
@@ -170,7 +178,7 @@ export function createDiffTool(ctx: DshContext, config: Required<DiffsConfig>): 
         return blocks;
       },
     },
-    async execute(args: unknown, invocation?: { agent?: { cwd?: string } }) {
+    async execute(args: unknown, invocation?: { agent?: { id?: string; cwd?: string }; signal?: AbortSignal }) {
       const a = (args ?? {}) as CompareInput;
       const input: CompareInput = {
         old: a.old,
@@ -288,7 +296,7 @@ export const Config = (() => {
  * Services this plugin waits for. Declaring them makes the loader keep the
  * entry inactive until `tools` and `commands` exist.
  */
-export const inject = ['tools', 'commands'];
+export const inject = ['tools', 'commands', 'agents', 'jobs'];
 
 /** Apply the plugin. Never throws: a broken tool must not block a DSH profile. */
 export function apply(ctx: DshContext, config: DiffsConfig = {}): void {
@@ -296,6 +304,7 @@ export function apply(ctx: DshContext, config: DiffsConfig = {}): void {
     localUrl: config.localUrl || process.env.DIFFS_LOCAL_URL || DEFAULT_LOCAL_URL,
     tool: config.tool !== false,
     commands: config.commands !== false,
+    card: config.card !== false,
   };
 
   if (resolved.tool) {
@@ -304,6 +313,18 @@ export function apply(ctx: DshContext, config: DiffsConfig = {}): void {
       ctx.logger?.info?.(`diffs: registered ${DIFF_TOOL_NAME}`);
     } catch (e) {
       ctx.logger?.warn?.(`diffs: could not register ${DIFF_TOOL_NAME} (${e instanceof Error ? e.message : String(e)})`);
+    }
+  }
+
+  // Cover every agent's `edit` / `write` / `bash` so the card each edit draws is a diffs.work
+  // comparison. This is what makes the plugin invisible in use: nobody calls a tool, the card is
+  // simply richer than the one the harness would have drawn.
+  if (resolved.card !== false) {
+    try {
+      installCards(ctx as unknown as CardContext)
+      ctx.logger?.info?.('diffs: card coverage active (edit / write / bash)')
+    } catch (e) {
+      ctx.logger?.warn?.(`diffs: card coverage unavailable (${e instanceof Error ? e.message : String(e)})`)
     }
   }
 

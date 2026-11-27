@@ -2,52 +2,66 @@
 
 每一项都写**实测过什么**，以及**什么时候测的**。
 
-日期：2026-11-27（本轮全部重测）。`pnpm test` exit 0，CI 绿，官网与文档站已部署并浏览器抽查。
+日期：2026-11-27。本轮重点是把 DSH 插件的「装了就有差异卡片」真正打通。
 
-## 本轮重新跑过每一项
+## 本轮新增：DSH 插件在 Web 版里渲染差异卡片 ✅
+
+**结论**：装好插件后，agent 改文件时对话里直接出现 diffs.work 的差异卡片，不需要调用任何命令。
+证据：`docs/evidence/dsh-web-word-card.png` —— agent 用 `bash` + python 改了一份 `.docx`，
+卡片并排显示旧版「45 日」→ 新版「30 日」，底部 `1 insertion(s) / 1 deletion(s) across 1 part(s)`。
+
+实现与踩过的坑写在 `docs/dsh-plugin-cards.md`，要点：
+
+| 发现 | 说明 |
+|---|---|
+| 卡片内容只能来自 `presentationMeta` | 它在注册表构造 `tool/result` 时被调用，外部插件无法事后追加 |
+| `get(name, scope)` 的 scope 是 **agent 对象本身** | 不带 scope 的 `get()` 读调用者自己那一层，插件层没有工具 → 永远「0 tools」 |
+| 覆盖时机在 `agent/pre-step` | `agent/created` 时工具包还没注册 |
+| `presentationMeta` 不能返回 `undefined` | 会让整次工具调用 `INVALID_TOOL_OUTPUT` |
+| 文档不走 `edit` | 实测改一句 `.docx` 用了 11 次 `bash`、0 次 `edit`，所以 `bash` 也必须覆盖 |
+
+## 本轮重新跑过
 
 | 能力 | 怎么跑 | 结果 |
 |---|---|---|
-| 七族 acceptance | `pnpm test:acceptance` | `7` 个 PASS |
-| MCP 往返 | `node scripts/verify-mcp.mjs` | initialize / tools/list / tools/call 全通 |
-| 本地站六族渲染 | `node scripts/check-local-families.mjs` | 六族全渲染，页面上无二进制泄漏 |
-| 文档站 52 页 | `node scripts/check-docs.mjs` | 无死链、无未翻译 key |
-| 网站上的命令 | `node scripts/check-docs-commands.mjs` | `POST /api/diff` 与 `compareFiles` 都跑通 |
-| 文档与事实一致 | `node scripts/check-docs-truth.mjs` | 路径都存在、扩展权限与 manifest 相符、样例无漂移、测试无硬编码家目录 |
-| 移动端 390px | `node scripts/check-mobile.mjs` | `all 8 views fit a 390px screen` |
-| 用例对标 | `node apps/cli/scripts/case-parity.mjs` | 覆盖 `168/229`、精确 `105/229` |
-| 新克隆能跑 | `node scripts/check-clean-clone.mjs` | 克隆 → 安装 → 构建 → 五族逐个比对，全通过 |
-| git difftool | 真实仓库 `git difftool` | `1 处差异 · +2/-1 行`，自动拉起 |
-| Claude Code hook | 编辑后终端打印差异；MCP 侧 `claude mcp list` 显示 Connected | `node apps/cli/lib/bin.js hook:claude-post` |
-| 浏览器扩展页内渲染 | 真实 GitHub commit `c0e6329` | 面板画在页面右下角，未跳转，见 `docs/evidence/` |
+| DSH 插件类型检查 | `tsc --noEmit -p apps/dsh-plugin` | 无错误（本轮修掉 40+ 处隐式 any、`DiffRow`/`DiffPayload` 与实现不一致） |
+| DSH 插件单测 | `node --test apps/dsh-plugin/test/*.test.mjs` | 20 例全绿 |
+| 六族卡片载荷 | `node scripts/inspect-session-cards.mjs <session>` | code / markdown / docx / xlsx / pptx 均产出 `diffs.work/portable@1`；pdf 为降级提示 |
 
-## 有截图但对不上全部场景的
+## 本轮逐条核过的对外宣称
 
-| 项 | 现状 |
+| 条目 | 实测结果 |
 |---|---|
-| DSH 卡片（Word） | ✅ 截图 `docs/evidence/A2-word-card.png`：四行表格 |
-| DSH 卡片（代码编辑） | ⏳ **未确认**。在 `desktop` profile 里连做 3 次 `edit`，`~/.diffs/inbox` 无新记录；agent 看不到自己界面的渲染结果，需人确认 |
+| git difftool | ✅ 真的拉起：`git difftool --tool=diffs` 输出 pair URL，浏览器打开后显示 `+1/−1`，见 `docs/evidence/A5-git-difftool.png` |
+| MCP 往返 | ✅ `initialize → tools/list → tools/call` 全通，返回 portable@1 |
+| VS Code 扩展 | ❌ 仓库里没有、市场里也没有；config 页已标 `planned` |
+| 浏览器扩展 | ✅ 存在且能用（选中两段文字右键比对）；文案只承诺这一点，没有夸大成「GitHub commit 页内自动渲染」 |
+| config 页 MCP 重复 | ✅ 只剩 MCP 专区一条 |
+| 「diff_summary」 | ❌ **不存在这个工具**，`tools/list` 只返回 `diff_compare`；中英文文案已删 |
+| 「可分享的对比视图」 | ❌ 官网 compare 页不读 `pair` 参数、也不做持久化；文案改成「结果留在本机标签页」 |
 
 ## 未完成（代码里没有，或没验证通过）
 
 | 项 | 为什么 |
 |---|---|
-| `movedWithEdit` | 内核 `MoveBlock` 只带一侧 `text`。加了 `moved_with_edit` 后命中 1/17 且破坏 `summary`/`counts` 一致性，已回退。要做对得让 `sem_diff` 记录移动块两侧内容 |
-| `inlinedFunction` 6/8 中的 2 个 | 局部内联（`const f = (e) => …`），声明在新文件里仍在，要按作用域数调用次数才认得出 |
+| PDF 文本层比对 | `@diffs/core-pdf` 依赖 pdf.js（浏览器库），Node 侧没有等价实现 |
+| `bash` 改 `find -exec` 等未点名路径的文件 | 索引只看命令文本里点名的路径；全量 stat 在 82 000 文件的工作区不可接受 |
+| 浏览器扩展的 GitHub commit 页内渲染 | 扩展目前只支持「选中两段文字右键比对」，没有 commit 页自动渲染 |
+| Claude Code mods | 本轮未做 |
+| `movedWithEdit` | 内核 `MoveBlock` 只带一侧 `text` |
 | VS Code 扩展 | 不存在，也没在市场里；`config` 页标 `planned` |
-| npm 发布 | `diffs` 属于别人（`synder`，对象比较库），无权限；`@diffs/diff-tool` 未发布。文案已标注 |
+| npm 发布 | `diffs` 属于别人（`synder`），无权限；文案已标注 |
 
 ## 容易误会的三点
 
 **1. 相对路径**
 
-`diffs diff a.ts b.ts` 的路径按**进程的 cwd** 解析。在 DSH 里 cwd 是 `WorkSpace`，所以要写
-`diffs.work/test-cases/...`；不是 bug。
+`diffs diff a.ts b.ts` 的路径按**进程的 cwd** 解析。在 DSH 里 cwd 是会话的工作目录。
 
 **2. Excel 没有并排开关**
 
-一张工作表本来就是一个网格同时承载新旧两侧，没有「第二个文档」可并排。六族里只有 Excel 是这样。
+一张工作表本来就是一个网格同时承载新旧两侧，没有「第二个文档」可并排。
 
 **3. 文档站说的「未发布到 npm」是真的**
 
-`npm i @diffs/diff-tool` 会 404；`npx diffs` 装到的是别人的包。用仓库内路径。
+`npm i @diffs/diff-tool` 会 404；`npx diffs` 装到的是别人的包。

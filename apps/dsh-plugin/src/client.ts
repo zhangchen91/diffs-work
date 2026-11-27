@@ -132,16 +132,19 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
         hunks.push(cur);
         continue;
       }
-      if (l.charAt(0) === "+") { cur.lines.push({ op: "ins", oldNo: null, newNo: newNo++, text: l.slice(1) }); }
-      else if (l.charAt(0) === "-") { cur.lines.push({ op: "del", oldNo: oldNo++, newNo: null, text: l.slice(1) }); }
-      else { cur.lines.push({ op: "same", oldNo: oldNo++, newNo: newNo++, text: l.charAt(0) === " " ? l.slice(1) : l }); }
+      // `DiffRow` spells an insertion `add` and its line numbers `oldLine`/`newLine`. This parser
+      // used the patch notation (`ins`, `oldNo`) instead, so an inserted line from a unified diff
+      // was not counted and its line numbers never reached the gutter.
+      if (l.charAt(0) === "+") { cur.lines.push({ op: "add", oldLine: null, newLine: newNo++, text: l.slice(1) }); }
+      else if (l.charAt(0) === "-") { cur.lines.push({ op: "del", oldLine: oldNo++, newLine: null, text: l.slice(1) }); }
+      else { cur.lines.push({ op: "same", oldLine: oldNo++, newLine: newNo++, text: l.charAt(0) === " " ? l.slice(1) : l }); }
     }
     var added = 0;
     var removed = 0;
     for (var k = 0; k < hunks.length; k++) {
       for (var n = 0; n < hunks[k].lines.length; n++) {
         var op = hunks[k].lines[n].op;
-        if (op === "ins") added++;
+        if (op === "add") added++;
         else if (op === "del") removed++;
       }
     }
@@ -158,6 +161,20 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
 
   function parseResult(block: any): DiffPayload | null {
     try {
+    // A card payload written by this plugin's host half lives in the durable `tool/result` meta,
+    // which is the only field a plugin can contribute to a shipped tool's card. Reading it FIRST is
+    // what makes an `edit`, a `write` or a `bash` that touched a document draw a real diff instead
+    // of nothing at all: the arguments of a shell command contain no diff to derive.
+    var meta = block && block.meta;
+    if (meta && typeof meta === "object") {
+      if (meta.schema === "diffs.work/portable@1") {
+        // A shell command can change several files; the card shows the first one and lists the rest.
+        if (Array.isArray(meta.files) && meta.files.length > 0) {
+          return meta.files[0] as DiffPayload;
+        }
+        if (Array.isArray(meta.hunks)) return meta as DiffPayload;
+      }
+    }
     // The host may hand the tool result over already parsed. Reading only `block.content` meant a
     // real diff rendered as "两版内容一致": the payload was there, this function could not see it.
     var direct = block && (block.result || block.value || block.structuredContent);
@@ -445,8 +462,38 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
    * Duplicated from packages/diff-ui on purpose: the client bundle shares React with the host, so
    * importing that package would ship a second React. This is ~60 lines of pure functions.
    */
-  function splitTop(src) {
-    var out = [], depth = 0, quote = null, cur = "";
+  /**
+   * One line of a comparison as the card draws it.
+   *
+   * The renderer works with a normalised line rather than the wire shape: an
+   * operation, the two line numbers, its text, and — for a changed row — the
+   * word-level segments the kernel produced.
+   */
+  interface DiffLine {
+    op: string;
+    oldLine?: number | null;
+    newLine?: number | null;
+    text?: string;
+    segments?: Array<{ op: string; text: string }> | null;
+  }
+
+  /**
+   * One parsed OpenUI statement.
+   *
+   * The shape the small parser below builds: the component name, its props,
+   * its child nodes, and either `items` (an array argument) or `value` (a
+   * scalar one).
+   */
+  interface OuiNode {
+    type: string;
+    props: Record<string, unknown>;
+    children: OuiNode[];
+    items?: unknown[];
+    value?: string;
+  }
+
+  function splitTop(src: string): string[] {
+    var out: string[] = [], depth = 0, quote = null, cur = "";
     for (var i = 0; i < src.length; i++) {
       var ch = src[i];
       if (quote) { cur += ch; if (ch === quote && src[i - 1] !== "\\") quote = null; continue; }
@@ -460,7 +507,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
     return out;
   }
 
-  function ouiLiteral(src, vars) {
+  function ouiLiteral(src: string, vars: Record<string, unknown>): unknown {
     var t = src.trim();
     if (t.length > 1 && (t[0] === '"' || t[0] === "'") && t[t.length - 1] === t[0]) {
       try { return JSON.parse(t[0] === '"' ? t : '"' + t.slice(1, -1).replace(/"/g, '\\"') + '"'); }
@@ -474,7 +521,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
       return splitTop(t.slice(1, -1)).map(function (x) { return ouiLiteral(x, vars); });
     }
     if (t[0] === "{" && t[t.length - 1] === "}") {
-      var props = {};
+      var props: Record<string, unknown> = {};
       splitTop(t.slice(1, -1)).forEach(function (pair) {
         var i = pair.indexOf(":");
         if (i < 0) return;
@@ -488,22 +535,22 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
     return t;
   }
 
-  function ouiCall(name, argsSrc, vars) {
-    var node = { type: name, props: {}, children: [] };
+  function ouiCall(name: string, argsSrc: string, vars: Record<string, unknown>): OuiNode {
+    var node: OuiNode = { type: name, props: {}, children: [] };
     splitTop(argsSrc).map(function (a) { return ouiLiteral(a, vars); }).forEach(function (a) {
       if (Array.isArray(a)) {
-        if (a.length && a.every(function (x) { return x && typeof x === "object" && x.type; })) {
-          node.children = node.children.concat(a);
-        } else node.items = a;
+        if (a.length && a.every(function (x) { return x && typeof x === "object" && "type" in x; })) {
+          node.children = node.children.concat(a as OuiNode[]);
+        } else node.items = a as unknown[];
       } else if (a && typeof a === "object") {
-        for (var k in a) node.props[k] = a[k];
+        for (var k in a as Record<string, unknown>) node.props[k] = (a as Record<string, unknown>)[k];
       } else if (typeof a === "string") node.value = a;
     });
     return node;
   }
 
-  function ouiStatements(src) {
-    var out = [], depth = 0, quote = null, cur = "";
+  function ouiStatements(src: string): string[] {
+    var out: string[] = [], depth = 0, quote: string | null = null, cur = "";
     for (var i = 0; i < src.length; i++) {
       var ch = src[i];
       if (quote) { cur += ch; if (ch === quote) quote = null; continue; }
@@ -518,8 +565,8 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
   }
 
   /** Parse OpenUI Lang source into a node tree; throws when there is no card. */
-  function parseOpenUI(src) {
-    var vars = {}, last = null;
+  function parseOpenUI(src: string): OuiNode {
+    var vars: Record<string, OuiNode> = {}, last: OuiNode | null = null;
     ouiStatements(String(src)).forEach(function (raw) {
       var m = /^\s*([A-Za-z_]\w*)\s*=\s*([A-Z][A-Za-z]*)\(([\s\S]*)\)\s*;?\s*$/.exec(raw);
       if (!m) return;
@@ -672,6 +719,12 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
           for (var p = 0; p < pending.length; p++) out.push({ left: pending[p] });
           pending = [];
           out.push({ left: ln, right: ln });
+        } else if (op === "mod" || op === "update") {
+          // An update is one row present on both sides, not a deletion plus an insertion: `side()`
+          // splits its `old → new` text per column.
+          for (var pm = 0; pm < pending.length; pm++) out.push({ left: pending[pm] });
+          pending = [];
+          out.push({ left: ln, right: ln });
         } else if (op === "del") {
           pending.push(ln);
         } else {
@@ -708,11 +761,19 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
         if (op === "del" && which === "new") return h("div", { className: "dsw-2p-side dsw-2p-blank" });
         if ((op === "ins" || op === "add") && which === "old") return h("div", { className: "dsw-2p-side dsw-2p-blank" });
         var cls = op === "add" || op === "ins" ? "add" : op === "del" ? "del" : op === "mod" ? "mod" : op === "move" ? "move" : "";
+        // An update row carries one sentence, `old → new`, because in a unified view that is the
+        // most useful form. Side by side it has to be split, or the same combined text appears in
+        // both columns and neither side says what that side actually contains.
+        var text = String((line as any).text || "");
+        if (op === "mod" || op === "update") {
+          var arrow = text.indexOf(" → ");
+          if (arrow > 0) text = which === "old" ? text.slice(0, arrow) : text.slice(arrow + 3);
+        }
         return h(
           "div",
           { className: "dsw-2p-side " + cls },
           h("span", { className: "dsw-diffs-ln" }, no == null ? "" : String(no)),
-          h("span", { className: "dsw-2p-txt" }, (line as any).text || ""),
+          h("span", { className: "dsw-2p-txt" }, text),
         );
       }
       return h(
@@ -824,7 +885,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
             continue;
           }
           if (a != null) { rows.push({ op: "del", oldLine: i + 1, newLine: null, text: a }); removed++; }
-          if (b != null) { rows.push({ op: "ins", oldLine: null, newLine: i + 1, text: b }); added++; }
+          if (b != null) { rows.push({ op: "add", oldLine: null, newLine: i + 1, text: b }); added++; }
         }
       } else if (whole != null) {
         var wl = whole.split("\n");
@@ -856,7 +917,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
       var [open, setOpen] = React.useState(true);
       // Side by side by default, matching the site; unified is one click away for a narrow panel.
       var [split, setSplit] = React.useState(true);
-      var diff;
+      var diff: DiffRecord;
       try {
         diff = React.useMemo(
           function () {
@@ -1029,13 +1090,16 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
 
     ctx.slots.inject("tool.call.toolview", function () {
       var out: Array<() => void> = [];
-      out.push(ctx.slots.register({ name: "tool.call.toolview", key: "diff_compare", priority: -1 }, DiffCard));
+      out.push(ctx.slots.register({ name: "tool.call.toolview", key: "diff_compare", priority: -1 }, DiffCard) as () => void);
       // Every other tool that changes a file renders through the same card. Installing a diff
       // plugin should change how edits look; before this, an `edit` still drew the host's own row
       // and the person had to ask for `diff_compare` on top of it.
-      var editKeys = ["edit", "write", "apply_patch", "multi_edit", "str_replace"];
+      // `bash` is here because that is how a document is actually edited: an agent driving
+      // `python-docx` never calls `edit`. The card reads the payload the host half wrote into the
+      // result's meta and falls back to the host's own row when there is none.
+      var editKeys = ["edit", "write", "apply_patch", "multi_edit", "str_replace", "bash"];
       for (var i = 0; i < editKeys.length; i++) {
-        out.push(ctx.slots.register({ name: "tool.call.toolview", key: editKeys[i], priority: -1 }, EditCard));
+        out.push(ctx.slots.register({ name: "tool.call.toolview", key: editKeys[i], priority: -1 }, EditCard) as () => void);
       }
       return function () { for (var j = 0; j < out.length; j++) out[j](); };
     });
