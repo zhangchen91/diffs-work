@@ -13,6 +13,7 @@
  *    postMessage and this script answers with the pair it stored.
  */
 import { showPanel } from "./inline-panel";
+import { GITHUB_STYLES, annotateGithubDiff, isGithubDiffPage } from "./github-diff";
 
 (() => {
   const state: { selections: string[] } = { selections: [] };
@@ -44,6 +45,32 @@ import { showPanel } from "./inline-panel";
     }
     return false;
   });
+
+  // ── GitHub commits: annotate, do not ask ────────────────────────────────────────────────
+  //
+  // A diff plugin that waits for a right-click is a bookmarklet. On a commit page the diff is
+  // already on screen, so the extension marks the words that changed inside GitHub's own rows as
+  // soon as they exist. GitHub re-renders those rows as you scroll (its diff is virtualised), so a
+  // MutationObserver re-runs the pass; the marker attribute makes it idempotent.
+  if (isGithubDiffPage(location.href)) {
+    const style = document.createElement("style");
+    style.textContent = GITHUB_STYLES;
+    (document.head ?? document.documentElement).appendChild(style);
+
+    const run = (): void => {
+      try {
+        annotateGithubDiff(document);
+      } catch {
+        // A page whose markup this version does not recognise must not break the page.
+      }
+    };
+    run();
+    const observer = new MutationObserver(() => run());
+    observer.observe(document.body, { childList: true, subtree: true });
+    // GitHub swaps the whole page on in-app navigation; the stylesheet and observer do not survive.
+    window.addEventListener("turbo:load", run);
+    window.addEventListener("pjax:end", run);
+  }
 
   const ASK = "diffs-work:pair:request";
   const ANSWER = "diffs-work:pair:response";

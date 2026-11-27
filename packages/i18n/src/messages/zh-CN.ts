@@ -334,7 +334,7 @@ const messages = {
   "download.title": "三种使用方式",
   "download.desc": "官网只是入口。真正的日常是：在浏览器里随手右键、在 Harness 里让 Agent 帮你比、或者自托管到你自己的集群。",
   "download.ext.title": "浏览器扩展",
-  "download.ext.body": "Chrome / Edge / Arc：选中网页上的两个附件或链接，右键「用 diffs.work 对比」。复用同一套 WASM 引擎，扩展本身开源在 {$path}。",
+  "download.ext.body": "Chrome / Edge / Arc：在 GitHub 的 commit / 对比页自动标出每一行里改动的词，不需要点任何按钮；选中网页上的两段文字右键也能直接比。扩展本身开源在 {$path}。",
   "download.dsh.title": "DeepSeek Harness 插件",
   "download.dsh.body": "装上之后不用调用任何命令：Agent 改文件时，对话里直接出现差异卡片——代码、Markdown、Word、Excel、PPT 都一样。Agent 也能主动调用 {$tool} 工具。插件源码开源在 {$path}。",
   "download.selfhost.title": "自托管",

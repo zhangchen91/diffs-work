@@ -334,7 +334,7 @@ const messages = {
   "download.title": "Three ways to use it",
   "download.desc": "The site is the door. Daily use is right-clicking in the browser, letting an agent diff for you in Harness, or hosting it yourself.",
   "download.ext.title": "Browser extension",
-  "download.ext.body": "Chrome, Edge or Arc: select two attachments or links and right-click “Compare with diffs.work”. Reuses the same WASM engines; the extension is open source in {$path}.",
+  "download.ext.body": "Chrome, Edge or Arc: on a GitHub commit or compare page it marks the words that changed inside each line, with nothing to click; selecting two passages and right-clicking still compares them. Source: {$path}.",
   "download.dsh.title": "DeepSeek Harness plugin",
   "download.dsh.body": "Nothing to invoke: when the agent edits a file, the conversation shows a diff card — code, Markdown, Word, Excel and PowerPoint alike. The agent can also call the {$tool} tool directly. Source: {$path}.",
   "download.selfhost.title": "Self-host",
