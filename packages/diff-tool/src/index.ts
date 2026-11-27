@@ -113,6 +113,37 @@ export async function resolveRevisionFile(file: string, revision: string, cwd: s
 
 /** Run the comparison and return the canonical structured result (never throws for a diffable pair). */
 import { opcDiff, sheetDiff } from "./kernel.ts";
+import { diffPdfText, type PdfTextRow } from "./pdf-text.ts";
+
+/**
+ * Turn PDF rows into hunks, one per page.
+ * @param rows - the compared rows, each carrying its page.
+ * @returns hunks shaped like every other family's.
+ */
+function groupPdfRows(rows: PdfTextRow[]): Array<{ header: string; lines: Array<{ kind: string; oldLine: number | null; newLine: number | null; text: string }> }> {
+  const byPage = new Map<number, PdfTextRow[]>();
+  for (const row of rows) {
+    const bucket = byPage.get(row.page) ?? [];
+    bucket.push(row);
+    byPage.set(row.page, bucket);
+  }
+  return [...byPage.entries()].map(([page, pageRows]) => ({
+    header: `## page ${page}`,
+    lines: pageRows.slice(0, 200).map((row) => ({
+      kind: row.op === "add" ? "insert" : row.op === "del" ? "delete" : "update",
+      oldLine: null,
+      newLine: null,
+      text:
+        row.op === "mod"
+          ? `${row.oldText ?? ""} → ${row.newText ?? ""}`
+          : row.op === "move"
+            ? `${row.oldText ?? ""}（第 ${(row.oldIndex ?? 0) + 1} 行 → 第 ${(row.newIndex ?? 0) + 1} 行）`
+            : row.op === "add"
+              ? row.newText ?? ""
+              : row.oldText ?? "",
+    })),
+  }));
+}
 
 export async function compareFiles(input: CompareInput = {}): Promise<CompareResult> {
   const cwd = input.cwd ? path.resolve(input.cwd) : process.cwd();
@@ -146,6 +177,41 @@ export async function compareFiles(input: CompareInput = {}): Promise<CompareRes
   if (!isTextFamily(family)) {
     // The same kernel the viewer uses runs here too: an agent that asks about an xlsx gets
     // the cell changes, not a link to open a browser tab.
+    // PDFs used to be declined here ("open the local viewer"), which an agent calling a tool cannot
+    // act on. pdf.js reads a text layer without a browser, so the pair is compared for real.
+    if (family === "pdf") {
+      try {
+        const pdf = await diffPdfText(oldAbs, newAbs);
+        const scans = [...pdf.oldEmpty, ...pdf.newEmpty];
+        const summary =
+          `${pdf.oldPages}→${pdf.newPages} page(s) · +${pdf.added} -${pdf.removed} ~${pdf.modified} >${pdf.moved} line(s)` +
+          (scans.length > 0 ? ` · ${[...new Set(scans)].length} page(s) have no text layer` : "");
+        return {
+          schema: "diffs.work/portable@1",
+          kind: "binary",
+          summary,
+          oldLabel,
+          newLabel,
+          family,
+          added: pdf.added,
+          removed: pdf.removed,
+          hunks: groupPdfRows(pdf.rows),
+          truncated: pdf.rows.length > 200,
+          note:
+            scans.length > 0
+              ? `Pages without a text layer cannot be compared (a scan has no text to read): ${[...new Set(scans)].join(", ")}.`
+              : summary,
+        };
+      } catch (error) {
+        // Falling through is right — a PDF this machine cannot parse is still a PDF, and the
+        // "open the viewer" note below explains what to do. Swallowing the reason entirely meant the
+        // CLI answered "NOT COMPARED" for a missing pdf.js build with no way to learn why, so it is
+        // reported where a diagnostic belongs.
+        if (process.env.DIFFS_PDF_DEBUG === "1") {
+          process.stderr.write(`diffs: pdf comparison unavailable: ${error instanceof Error ? error.message : String(error)}\n`);
+        }
+      }
+    }
     if (family === "xlsx" || family === "docx" || family === "pptx") {
       try {
         const oldBytes = new Uint8Array(await readFile(oldAbs));

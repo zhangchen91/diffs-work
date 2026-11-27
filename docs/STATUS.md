@@ -46,7 +46,6 @@
 
 | 项 | 为什么 |
 |---|---|
-| PDF 文本层比对 | `@diffs/core-pdf` 依赖 pdf.js（浏览器库），Node 侧没有等价实现 |
 | `bash` 改 `find -exec` 等未点名路径的文件 | 索引只看命令文本里点名的路径；全量 stat 在 82 000 文件的工作区不可接受 |
 | Claude Code mods | 本轮未做 |
 | `movedWithEdit` | 内核 `MoveBlock` 只带一侧 `text` |

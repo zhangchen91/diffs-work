@@ -43,7 +43,7 @@
 | Word | `+1/-1 · 1 insertion(s) / 1 deletion(s) across 1 part(s)` |
 | Excel | `2 sheet(s), 1 changed cells` |
 | PowerPoint | `+1/-1 across 5 part(s)` |
-| PDF | 能产出卡片，但内容是“需要 WASM 渲染器”的降级提示 |
+| PDF | `+1 -1 ~1 >1`（文本层，含移动），与归一路径的 CLI / MCP 同值 |
 
 `dsh web` 里的界面截图：`docs/evidence/dsh-web-word-card.png`（agent 用 `bash` + python 改了一份
 `.docx`，卡片并排显示旧版「45 日」与新版「30 日」）。
@@ -58,8 +58,7 @@ node scripts/inspect-session-cards.mjs <session 目录>
 
 ## 已知边界（不打算含糊）
 
-- **PDF 没有文本层比对**。`@diffs/core-pdf` 依赖 pdf.js（浏览器库），Node 侧没有等价实现，
-  所以 CLI / 插件只能给出降级提示。
+- **PDF 只比文本层**：扫描件（没有文字层）报「某页没有文本层」，不会假装比过。
 - **`bash` 只能看见命令文本里点名的文件**。用 `find … -exec` 或编译脚本里写死路径去改的文件
   不会有卡片 —— 这是取舍：本机工作区有 82 000 个文件的目录，每次 `ls` 都全量 stat 不可接受。
 - **工作区过大时降级**：在超过 20 000 个候选文件的目录里，插件不产出卡片，保留原卡片。

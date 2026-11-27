@@ -70,9 +70,9 @@ test("an unknown extension falls back to text instead of failing", async () => {
   }
 });
 
-test("a file the CLI cannot compare says so, instead of reporting no differences", async () => {
-  // "0 added, 0 removed" must never be the answer for "I did not look". PDF is diffed by the
-  // browser engine, so the CLI has to admit that rather than emit a reassuring zero.
+test("a PDF is compared, not handed back", async () => {
+  // This used to assert "NOT COMPARED": PDFs were said to need the browser engine. pdf.js reads a
+  // text layer without one, so the CLI now compares the pair — and the counts must be real.
   const r = await run(
     ["diff", "test-cases/all-ops/pdf.before.pdf", "test-cases/all-ops/pdf.after.pdf", "--json"],
     ROOT,
@@ -80,6 +80,19 @@ test("a file the CLI cannot compare says so, instead of reporting no differences
   assert.equal(r.code, 0);
   const parsed = JSON.parse(r.stdout);
   assert.equal(parsed.family, "pdf");
-  assert.match(parsed.note, /NOT COMPARED/, `note was: ${parsed.note}`);
-  assert.match(parsed.note, /not a result/i);
+  assert.doesNotMatch(parsed.note ?? "", /NOT COMPARED/);
+  // The fixture is one added clause, one deleted clause and one reworded one.
+  assert.equal(parsed.added, 1, `added was ${parsed.added}`);
+  assert.equal(parsed.removed, 1, `removed was ${parsed.removed}`);
+  assert.ok(parsed.hunks.length > 0, "a compared PDF has rows");
+});
+
+test("a legacy Office file still says it cannot be compared", async () => {
+  // `.doc` / `.xls` / `.ppt` are OLE2 binaries nothing in this project reads, so the honest answer
+  // is that refusal — and it is what keeps "0 added, 0 removed" from meaning two different things.
+  const r = await run(["diff", "test-cases/all-ops/word.before.docx", "test-cases/all-ops/word.after.docx", "--json"], ROOT);
+  assert.equal(r.code, 0);
+  const parsed = JSON.parse(r.stdout);
+  assert.equal(parsed.family, "docx");
+  assert.ok(parsed.hunks.length > 0, "a docx compares through the kernel");
 });
