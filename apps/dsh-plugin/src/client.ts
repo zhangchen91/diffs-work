@@ -35,6 +35,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
 // exactly as the website does — the plugin having its own colouring is how the two drifted.
 import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
 import { tokenDeclaration } from "../../../packages/diff-ui/src/lib/token-colours";
+import { numberCss, rowCss } from "../../../packages/diff-ui/src/lib/diff-metrics";
 
 ;(function () {
   "use strict";
@@ -444,8 +445,13 @@ import { tokenDeclaration } from "../../../packages/diff-ui/src/lib/token-colour
     ".dsw-diffs-hunk{padding:2px 0;border-bottom:1px dashed var(--dsw-border-color,rgba(127,127,127,.18))}",
     ".dsw-diffs-hunk:last-child{border-bottom:0}",
     ".dsw-diffs-hunkhead{padding:2px 10px;color:var(--dsw-text-color-tertiary,#999);font-size:11px}",
-    ".dsw-diffs-line{display:flex;gap:8px;padding:0 10px;font-family:var(--dsw-font-family-mono,ui-monospace,monospace);white-space:pre-wrap;word-break:break-all}",
-    ".dsw-diffs-ln{width:34px;flex:none;text-align:right;color:var(--dsw-text-color-tertiary,#aaa)}",
+    // Metrics taken from the site's diff view (`hunk-view.tsx`): 12.5px / line-height 1.6 for the
+    // code, 11px for the line numbers, `py-[1px]` per row. Without them the card inherited the
+    // host's chat typography and read as a different widget even with the same colours.
+    // Metrics come from `diff-metrics.ts`, the same numbers the site's rows use.
+    ".dsw-diffs-line{display:flex;gap:8px;" + rowCss() + "font-family:var(--dsw-font-family-mono,ui-monospace,monospace);white-space:pre-wrap;word-break:break-word}",
+    ".dsw-diffs-ln{" + numberCss() + "flex:none;text-align:right;color:var(--dsw-text-color-tertiary,#9aa4b2);user-select:none}",
+    ".dsw-2p-txt{font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}",
     ".dsw-diffs-txt{flex:1;min-width:0;display:flex;gap:4px}",
     ".dsw-diffs-mark{flex:none;width:10px;color:var(--dsw-text-color-tertiary,#888);user-select:none}",
     // Token colours from the site's highlighter (`highlight.ts` emits these three kinds). They are
