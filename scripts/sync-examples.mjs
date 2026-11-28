@@ -23,10 +23,14 @@ for (const app of ["website", "local"]) {
   const dst = path.join(ROOT, `apps/${app}/public/examples`);
   await rm(dst, { recursive: true, force: true });
   await mkdir(dst, { recursive: true });
-  await cp(SRC, dst, { recursive: true, filter: (src) => !src.endsWith("README.md") });
+  // `.DS_Store` is macOS noise that Finder writes into any folder it opens. It was being
+  // published as a sample file, and `check-docs-truth` then failed on "the published sample …
+  // differs from test-cases/all-ops/…" for a file nobody meant to ship.
+  const isJunk = (src) => path.basename(src) === ".DS_Store";
+  await cp(SRC, dst, { recursive: true, filter: (src) => !isJunk(src) && !src.endsWith("README.md") });
   await cp(ALLOPS, path.join(dst, "allops"), {
     recursive: true,
-    filter: (src) => !src.includes("_reference") && !src.endsWith("expected.json"),
+    filter: (src) => !isJunk(src) && !src.includes("_reference") && !src.endsWith("expected.json"),
   });
   console.log(`[sync-examples] examples + test-cases/all-ops → apps/${app}/public/examples`);
 }

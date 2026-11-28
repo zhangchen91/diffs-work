@@ -36,6 +36,8 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
 import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
 import { tokenDeclaration } from "../../../packages/diff-ui/src/lib/token-colours";
 import { numberCss, rowCss } from "../../../packages/diff-ui/src/lib/diff-metrics";
+// The site's ruler marks are a pure function over hunks; only the drawing differs per surface.
+import { rulerMarksFrom } from "../../../packages/diff-ui/src/lib/ruler-marks";
 
 ;(function () {
   "use strict";
@@ -428,7 +430,18 @@ import { numberCss, rowCss } from "../../../packages/diff-ui/src/lib/diff-metric
     ".dsw-diffs-body{border-top:1px solid var(--dsw-border-color,rgba(127,127,127,.24));max-height:min(70vh,560px);overflow:auto}",
     // Long runs of unchanged lines fold away, the way the site does it; a 300-line file should not
     // push the conversation off the screen.
-    ".dsw-2p{display:grid;grid-template-columns:1fr 1fr;gap:0;font-family:var(--dsw-font-family-mono,ui-monospace,monospace)}",
+    // The ruler: a 4px column of marks showing where the changes are, so a reader can tell whether
+    // the thing they want is above or below without scrolling the whole comparison.
+    ".dsw-ruler{position:relative;width:4px;flex:none;background:var(--dsw-fill-color-secondary,rgba(127,127,127,.08))}",
+    ".dsw-ruler-mark{position:absolute;left:0;right:0;height:2px;border-radius:1px}",
+    ".dsw-ruler-mark.add{background:var(--dsw-color-success,#22c55e)}",
+    ".dsw-ruler-mark.del{background:var(--dsw-color-danger,#ef4444)}",
+    ".dsw-ruler-mark.mod{background:var(--dsw-color-warning,#f59e0b)}",
+    ".dsw-ruler-mark.move{background:#a78bfa}",
+        // Three columns when the ruler is present (4px + the two panes), two otherwise: a grid with a
+    // fixed track count would push the ruler onto a row of its own.
+    ".dsw-2p{display:grid;grid-template-columns:4px 1fr 1fr;gap:0;font-family:var(--dsw-font-family-mono,ui-monospace,monospace)}",
+    ".dsw-2p:not(:has(.dsw-ruler)){grid-template-columns:1fr 1fr}",
     ".dsw-2p-col{min-width:0;border-right:1px solid var(--dsw-border-color,rgba(127,127,127,.18))}",
     ".dsw-2p-col:last-child{border-right:0}",
     ".dsw-2p-head{padding:2px 10px;color:var(--dsw-text-color-tertiary,#888);font-size:11px;border-bottom:1px solid var(--dsw-border-color,rgba(127,127,127,.18))}",
@@ -872,9 +885,52 @@ import { numberCss, rowCss } from "../../../packages/diff-ui/src/lib/diff-metric
           h("span", { className: "dsw-2p-txt" }, colourLine(h, text, props.file || "", "p" + which + no)),
         );
       }
+      // Where the changes are, down the side — the site's ruler, in the sit's own dialect. It earns
+      // its width only on a comparison long enough to scroll; on two rows it is noise.
+      var rulerMarks: Array<{ at: number; kind: string }> = [];
+      if (lines.length >= 8 && typeof rulerMarksFrom === "function") {
+        try {
+          // The site's ruler speaks `kind: insert|delete|equal`; a `portable@1` hunk speaks
+          // `op: add|del|same`. Passing the rows through unchanged made the ruler silently empty —
+          // it looked for `kind`, found `undefined`, and drew nothing.
+          rulerMarks = rulerMarksFrom(
+            hunks.map(function (hh) {
+              return {
+                operation: "lines",
+                lines: (hh.lines || []).map(function (row) {
+                  var op = String((row as any).op || (row as any).kind || "same");
+                  return {
+                    kind:
+                      op === "add" || op === "ins" || op === "insert"
+                        ? "insert"
+                        : op === "del" || op === "delete"
+                          ? "delete"
+                          : op === "move"
+                            ? "move"
+                            : op === "mod" || op === "update"
+                              ? "style"
+                              : "equal",
+                  };
+                }),
+              };
+            }),
+            lines.length,
+          );
+        } catch {
+          // An older kernel shape must not cost the reader the rows.
+          rulerMarks = [];
+        }
+      }
+      var ruler = rulerMarks.length
+        ? h("div", { className: "dsw-ruler", "data-testid": "diffs-ruler", title: rulerMarks.length + " 处改动" },
+            rulerMarks.map(function (mark, mi) {
+              return h("i", { key: "m" + mi, className: "dsw-ruler-mark " + mark.kind, style: { top: (mark.at * 100) + "%" } });
+            }))
+        : null;
       return h(
         "div",
         { className: "dsw-2p" },
+        ruler,
         h("div", { className: "dsw-2p-col" },
           h("div", { className: "dsw-2p-head" }, "旧版"),
           rows.map(function (r, i) { return r.gap ? h("div", { key: "lg" + i, className: "dsw-2p-head" }, "⋯ " + String(r.header || "")) : h("div", { key: "l" + i, className: "dsw-2p-row-l" }, side(r.left, "old")); })),
