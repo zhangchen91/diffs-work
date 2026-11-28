@@ -34,6 +34,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
 // (plain TypeScript, no DOM) and compiles into this bundle at ~10 KB, so the card colours a line
 // exactly as the website does — the plugin having its own colouring is how the two drifted.
 import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
+import { tokenDeclaration } from "../../../packages/diff-ui/src/lib/token-colours";
 
 ;(function () {
   "use strict";
@@ -450,9 +451,11 @@ import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
     // Token colours from the site's highlighter (`highlight.ts` emits these three kinds). They are
     // muted on purpose: a diff row already carries a background for add/delete, and saturated
     // syntax colour on top of it makes the change harder to find, not easier.
-    ".dsw-hl-comment{color:var(--dsw-color-text-tertiary,#8b949e);font-style:italic}",
-    ".dsw-hl-string{color:var(--dsw-color-string,#a5d6ff)}",
-    ".dsw-hl-keyword{color:var(--dsw-color-keyword,#ff7b72)}",
+    // The colours come from `token-colours.ts`, the same table the site reads, so a change there
+    // reaches both surfaces instead of one.
+    ".dsw-hl-comment{" + tokenDeclaration("comment") + "}",
+    ".dsw-hl-string{" + tokenDeclaration("string") + "}",
+    ".dsw-hl-keyword{" + tokenDeclaration("keyword") + "}",
         ".dsw-seg-ins{background:color-mix(in srgb,var(--dsw-color-success,#22c55e) 32%,transparent);border-radius:2px}",
     ".dsw-seg-del{background:color-mix(in srgb,var(--dsw-color-danger,#ef4444) 32%,transparent);border-radius:2px;text-decoration:line-through}",
     ".dsw-seg-strong{font-weight:600}",

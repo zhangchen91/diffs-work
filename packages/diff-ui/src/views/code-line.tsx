@@ -7,6 +7,7 @@
  */
 import * as React from "react";
 import { highlight, type Token } from "../lib/highlight";
+import { TOKEN_COLOURS } from "../lib/token-colours";
 export { highlightLines } from "../lib/highlight";
 
 /** Keyed by the text so a row re-renders only when it changes. */
@@ -34,12 +35,14 @@ export function CodeLine({
         ) : (
           <span
             key={i}
+            // The colour map is shared with the DSH plugin (`token-colours.ts`); the site paints it
+            // with its own class names, the plugin with its own, but there is one table.
             className={
               t.kind === "comment"
-                ? "text-slate-500 italic"
+                ? TOKEN_COLOURS.comment.siteClass
                 : t.kind === "string"
-                  ? "text-emerald-300/80"
-                  : "text-sky-300/90"
+                  ? TOKEN_COLOURS.string.siteClass
+                  : TOKEN_COLOURS.keyword.siteClass
             }
           >
             {t.text}
