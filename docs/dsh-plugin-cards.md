@@ -56,6 +56,21 @@ node scripts/inspect-session-cards.mjs <session 目录>
 
 会把每条工具结果是否带卡片、卡片指向哪个文件打出来。
 
+## 卡片在哪儿：一个绕不过去的界面限制
+
+装好插件后，卡片**渲染在「N 次工具调用」的折叠区里**。主界面上那一行
+「已编辑 N 个文件 · +1 -1」是 **DSH 宿主的组件**（`ui-deliverables` 的 `ChangedFiles`），
+不是我们的，而且插件无法替换它：
+
+| 能不能换 | 结论 |
+|---|---|
+| `conversation.chat.turnTail` | 是 `list` slot，只能**追加**，不能替换宿主的 `ChangedFiles` |
+| 从 turnTail 拿到本轮的差异 | **拿不到**。该 seat 只给 `{ turn, seq, openFile }`；`useChat().locations.getTurn(n)` 返回的是系统提示、用户消息、`turn-process` 折叠容器与 context 行——工具结果在容器内部，不在其中 |
+| 宿主那张卡的数据 | 宿主自己按 turn 开始/结束抓文件算的（`workspace-changes/capture.ts`），与我们的 `meta` 无关 |
+
+所以现状是：**卡片内容是对的，位置在折叠区**。要让它出现在主界面，只有一条路——DSH 上游
+把「工具行」或「变更行」的渲染做成可替换的 keyed slot。插件侧没有别的办法。
+
 ## 已知边界（不打算含糊）
 
 - **PDF 只比文本层**：扫描件（没有文字层）报「某页没有文本层」，不会假装比过。
