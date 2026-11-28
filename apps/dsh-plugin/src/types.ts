@@ -99,6 +99,8 @@ export interface DiffRecord {
   truncated?: boolean;
   unified?: string;
   at?: number;
+  /** The turn that produced this comparison, so the turn's tail can host its card. */
+  turn?: number;
 }
 
 export interface SlotContext {

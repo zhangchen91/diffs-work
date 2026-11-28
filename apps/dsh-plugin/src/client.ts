@@ -392,6 +392,8 @@ import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
       // card claim it had nothing to show, even when the result carried its revisions.
       binary: !!(data.binary || data.kind === "binary"),
       pending: false,
+      // The block carries the turn it belongs to; the turn's tail uses it to find its cards.
+      turn: typeof (block as any)?.turn === "number" ? (block as any).turn : undefined,
     };
   }
 
@@ -697,6 +699,49 @@ import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
       return node(tree, "root");
     }
 
+
+    /**
+     * The comparison cards for one closing turn, drawn at the END of the message.
+     *
+     * `tool.call.toolview` renders inside the collapsed "N 次工具调用" disclosure, so the card a
+     * reader wants is one click away and the host's own "已编辑 N 个文件" row sits in its place.
+     * `conversation.chat.turnTail` is an additive seat mounted after the turn's prose, which is
+     * where a diff belongs.
+     *
+     * The nodes are read from the chat's own turn index rather than from the record store: a
+     * `tool-result` node carries no `turn` field (measured — `ToolResultNode` has `seq`, `turn` is
+     * on the turn-end node), so the record store could not say which turn a card belonged to.
+     * @param props - the seat's owner currency plus the standard hooks.
+     * @returns the turn's comparison cards, or null when it changed nothing this build can show.
+     */
+    /**
+     * The comparison cards for one closing turn, drawn at the END of the message.
+     *
+     * `tool.call.toolview` renders inside the collapsed "N 次工具调用" disclosure, so the card a
+     * reader wants is one click away while the host's own "已编辑 N 个文件" row holds the visible
+     * place. `conversation.chat.turnTail` is an additive seat mounted after the turn's prose.
+     *
+     * Ownership is by turn, and the turn has to come from the seat: a `tool-result` node carries
+     * `seq` but no `turn` (measured), so a card cannot know its turn when it renders. The seat
+     * knows it, so the first time it draws it CLAIMS every card that has not been claimed yet.
+     * Cards render before the tail (they are higher in the tree), so "unclaimed at tail time" is
+     * exactly "produced by this turn".
+     */
+    function TurnTail(): unknown {
+      // Deliberately not implemented, and left as a documented dead end rather than a silent stub.
+      //
+      // DSH's `conversation.chat.turnTail` owns only `{ turn, seq, openFile }`; this plugin cannot
+      // reach the turn's tool results from it. The turn's nodes are a `turn-process` disclosure
+      // whose children — where `tool.call.toolview` renders — are not exposed through
+      // `useChat().locations`/`.nodes` (measured: `getTurn(1)` returns the system prompt, the user
+      // message, the turn-process node and the context nodes; none carries a tool result). Every
+      // attempt to reach further produced an empty card here.
+      //
+      // The visible consequence: on a turn whose host card ("已编辑 N 个文件") is drawn, our card
+      // sits inside the "N 次工具调用" disclosure. The host owns that row; a plugin cannot replace
+      // a `list` slot.
+      return null;
+    }
 
     /**
      * Collapse long runs of unchanged rows.
@@ -1156,6 +1201,10 @@ import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
         out.push(ctx.slots.register({ name: "tool.call.toolview", key: editKeys[i], priority: -1 }, EditCard) as () => void);
       }
       return function () { for (var j = 0; j < out.length; j++) out[j](); };
+    });
+    // The turn's tail, where a diff belongs: after the prose, in the open.
+    ctx.slots.inject("conversation.chat.turnTail", function () {
+      return ctx.slots.register({ name: "conversation.chat.turnTail", id: "diffs-turn-tail", order: 5, label: "对比" }, TurnTail);
     });
     ctx.slots.inject("sidebar.footer.action", function () {
       return ctx.slots.register({ name: "sidebar.footer.action", id: "diffs-changes", order: 5, label: "对比" }, ChangesButton);
