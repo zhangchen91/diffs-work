@@ -224,8 +224,23 @@ test("the card renders two columns with line numbers and text", () => {
   })(tree);
   const cls = flat.join(" ");
   assert.match(cls, /dsw-2p-col/, "two columns");
-  assert.ok(flat.includes("  return input.trim();"), "the inserted line is drawn");
-  assert.ok(flat.includes("  return input.trim() || null;"), "the deleted line is drawn");
+  // A line is drawn as one span per syntax token now, and `flat` holds class names and text
+  // together. The text assertion therefore runs over the walk's TEXT children only; joining the
+  // whole list mixes `dsw-2p-col` into the line and never matches.
+  const text = [];
+  (function gather(n) {
+    if (!n) return;
+    if (Array.isArray(n)) { n.forEach(gather); return; }
+    if (typeof n === "string") { text.push(n); return; }
+    let kids = n.kids || [];
+    if (typeof n.type === "function") {
+      try { const inner = n.type(n.props); kids = inner ? [inner] : []; } catch (e) { return; }
+    }
+    kids.forEach(gather);
+  })(tree);
+  const drawn = text.join("");
+  assert.ok(drawn.includes("  return input.trim();"), "the inserted line is drawn");
+  assert.ok(drawn.includes("  return input.trim() || null;"), "the deleted line is drawn");
   assert.ok(flat.includes("1") && flat.includes("2"), "line numbers are drawn");
 });
 

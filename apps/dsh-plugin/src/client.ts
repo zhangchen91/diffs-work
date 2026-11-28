@@ -30,6 +30,10 @@
  * from the module table, never bundled.
  */
 import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext } from "./types";
+// The site's highlighter, not a copy of it. `highlight.ts` depends only on `@diffs/core-code`
+// (plain TypeScript, no DOM) and compiles into this bundle at ~10 KB, so the card colours a line
+// exactly as the website does — the plugin having its own colouring is how the two drifted.
+import { highlight } from "../../../packages/diff-ui/src/lib/highlight";
 
 ;(function () {
   "use strict";
@@ -254,6 +258,38 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
     return parts[parts.length - 1] || p;
   }
 
+  /**
+   * Colour one line of code the way the website does.
+   *
+   * Returns React children: one span per token, so comments, strings and keywords are the same
+   * colours the site uses because the tokenizer is the same file. Text is never changed — every
+   * span concatenated in order is exactly the input line.
+   *
+   * A line that carries word-level segments is NOT coloured here: those segments already say what
+   * changed, and colouring them again would fight the change marks for the reader's attention.
+   * @param h - the host's createElement.
+   * @param text - the line's text.
+   * @param file - the file name, used to pick the language.
+   * @param keyPrefix - a stable prefix for React keys.
+   * @returns the line's children.
+   */
+  function colourLine(h: ReactLike["createElement"], text: string, file: string, keyPrefix: string): unknown {
+    if (!text || !file) return text;
+    var tokens: Array<{ text: string; kind: string | null }>;
+    try {
+      tokens = highlight(text, file).tokens;
+    } catch {
+      // A highlighter failure must never cost the reader the line itself.
+      return text;
+    }
+    if (tokens.length <= 1) return text;
+    return tokens.map(function (token, index) {
+      return token.kind
+        ? h("span", { key: keyPrefix + index, className: "dsw-hl-" + token.kind }, token.text)
+        : token.text;
+    });
+  }
+
   /** Normalise a tool result into the shape every view here uses. */
   function toDiff(block: any): DiffRecord {
     var data = parseResult(block);
@@ -409,7 +445,13 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
     ".dsw-diffs-ln{width:34px;flex:none;text-align:right;color:var(--dsw-text-color-tertiary,#aaa)}",
     ".dsw-diffs-txt{flex:1;min-width:0;display:flex;gap:4px}",
     ".dsw-diffs-mark{flex:none;width:10px;color:var(--dsw-text-color-tertiary,#888);user-select:none}",
-    ".dsw-seg-ins{background:color-mix(in srgb,var(--dsw-color-success,#22c55e) 32%,transparent);border-radius:2px}",
+    // Token colours from the site's highlighter (`highlight.ts` emits these three kinds). They are
+    // muted on purpose: a diff row already carries a background for add/delete, and saturated
+    // syntax colour on top of it makes the change harder to find, not easier.
+    ".dsw-hl-comment{color:var(--dsw-color-text-tertiary,#8b949e);font-style:italic}",
+    ".dsw-hl-string{color:var(--dsw-color-string,#a5d6ff)}",
+    ".dsw-hl-keyword{color:var(--dsw-color-keyword,#ff7b72)}",
+        ".dsw-seg-ins{background:color-mix(in srgb,var(--dsw-color-success,#22c55e) 32%,transparent);border-radius:2px}",
     ".dsw-seg-del{background:color-mix(in srgb,var(--dsw-color-danger,#ef4444) 32%,transparent);border-radius:2px;text-decoration:line-through}",
     ".dsw-seg-strong{font-weight:600}",
     ".dsw-diffs-line.add{background:color-mix(in srgb,var(--dsw-color-success,#22c55e) 10%,transparent)}",
@@ -736,7 +778,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
       return out;
     }
 
-    function TwoPane(props: { hunks?: DiffHunk[]; binary?: boolean }): unknown {
+    function TwoPane(props: { hunks?: DiffHunk[]; binary?: boolean; file?: string }): unknown {
       var hunks = props.hunks || [];
       var lines: DiffLine[] = [];
       for (var hh = 0; hh < hunks.length; hh++) lines = lines.concat(hunks[hh].lines || []);
@@ -773,7 +815,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
           "div",
           { className: "dsw-2p-side " + cls },
           h("span", { className: "dsw-diffs-ln" }, no == null ? "" : String(no)),
-          h("span", { className: "dsw-2p-txt" }, text),
+          h("span", { className: "dsw-2p-txt" }, colourLine(h, text, props.file || "", "p" + which + no)),
         );
       }
       return h(
@@ -788,7 +830,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
       );
     }
 
-    function Hunks(props: { hunks?: DiffHunk[]; binary?: boolean }): unknown {
+    function Hunks(props: { hunks?: DiffHunk[]; binary?: boolean; file?: string }): unknown {
       var hunks = props.hunks || [];
       if (!hunks.length) {
         return h("div", { className: "dsw-diffs-empty" }, props.binary ? "二进制文件：在本地视图中查看" : "两版内容一致");
@@ -832,7 +874,7 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
                         return h("span", { key: si, className: sc }, String(seg.text == null ? "" : seg.text));
                       }),
                     )
-                  : (line.text || "");
+                  : colourLine(h, line.text || "", props.file || "", "hl");
                 return h(
                   "div",
                   { key: "l" + li, className: "dsw-diffs-line " + cls },
@@ -986,9 +1028,9 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
               // the site uses. Rendering the table here is what made the desktop card look like a
               // plain code block beside the website.
               diff.hunks && diff.hunks.length && split
-                ? h(TwoPane, { hunks: diff.hunks, binary: diff.binary })
+                ? h(TwoPane, { hunks: diff.hunks, binary: diff.binary, file: diff.name })
                 : diff.hunks && diff.hunks.length
-                ? h(Hunks, { hunks: diff.hunks, binary: diff.binary })
+                ? h(Hunks, { hunks: diff.hunks, binary: diff.binary, file: diff.name })
                 : diff.openui
                   ? h(OpenUICard, { source: diff.openui })
                   : h(Hunks, { hunks: [], binary: diff.binary }))
