@@ -865,6 +865,18 @@ import type { DiffPayload, DiffRecord, DiffRow, DiffHunk, ReactLike, SlotContext
      */
     function EditCard(props: { block?: any; callId?: string }): unknown {
       var block = (props && props.block) || {};
+      // Our host half writes the real comparison into the result's meta. Reading it first is the
+      // difference between a card that shows the change and one that says "两版内容一致" over a file
+      // the agent plainly edited: deriving rows from `old_string`/`new_string` compares them LINE BY
+      // LINE, so any edit inside one line (`45` → `30`) has no differing line index and produced
+      // `+0 -0`. Document edits have no text arguments at all and were always empty.
+      // The marker is on `meta`; a shell command's payload nests its files under `meta.files`, so
+      // checking the PARSED result for `schema` never matched and every `edit` fell back to the
+      // line-by-line derivation — the empty card in the screenshots.
+      var meta = (block as any) && (block as any).meta;
+      if (meta && typeof meta === "object" && meta.schema === "diffs.work/portable@1") {
+        return h(DiffCard, { block: block, callId: String((props && props.callId) || "") } as never);
+      }
       var args = argsOf(block) || {};
       var file = String(args.path || args.file_path || args.filePath || args.file || "");
       var oldStr = args.old_string != null ? String(args.old_string) : args.oldString != null ? String(args.oldString) : null;

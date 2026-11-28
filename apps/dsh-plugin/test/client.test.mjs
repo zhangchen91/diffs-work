@@ -254,3 +254,38 @@ test("an update row is split across the two columns", () => {
   assert.ok(flat.includes("甲方应于 30 日内交付"), "right column keeps the new text");
   assert.ok(!flat.includes("甲方应于 45 日内交付 → 甲方应于 30 日内交付"), "the combined sentence is not drawn");
 });
+
+test("an edit inside one line is not reported as identical", () => {
+  // The card used to derive its rows from `old_string`/`new_string` compared line by line. An edit
+  // whose change sits INSIDE one line (`45 日` → `30 日`) has no differing line index, so the card
+  // said "两版内容一致" over a file the agent had just changed — the exact screen a reader sees when
+  // the plugin is installed. The payload the host half writes into `meta` is the authority.
+  const { mod } = load();
+  const payload = {
+    schema: "diffs.work/portable@1",
+    operation: "update",
+    family: "docx",
+    path: "协议样例.docx",
+    summary: "1 insertion(s) / 1 deletion(s) across 1 part(s)",
+    added: 1,
+    removed: 1,
+    hunks: [{
+      header: "@@ -1,1 +1,1 @@",
+      lines: [{ op: "mod", oldLine: 1, newLine: 1, text: "交付：45 日内 → 交付：30 日内" }],
+    }],
+  };
+  const block = {
+    callId: "single-line",
+    name: "edit",
+    argsRaw: JSON.stringify({
+      file_path: "协议样例.docx",
+      old_string: "交付：45 日内",
+      new_string: "交付：30 日内",
+    }),
+    meta: payload,
+  };
+  const diff = mod.__internals.toDiff(block);
+  assert.equal(diff.added, 1, "the payload's count is used");
+  assert.equal(diff.hunks.length, 1, "the payload's row is drawn");
+  assert.equal(diff.summary, "1 insertion(s) / 1 deletion(s) across 1 part(s)");
+});
